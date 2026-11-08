@@ -1,5 +1,15 @@
 # Deployment
 
+## Quickest path: Vercel + Supabase integration (no copying keys or SQL)
+
+1. Vercel → Add New → Project → import `itaaxl/Abide-` (framework Next.js). Deploy — the Bible reader works without a database.
+2. Vercel project → Storage (or Marketplace) → Supabase → Create/Install, connect it to this project. It syncs `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` and `POSTGRES_URL_NON_POOLING`.
+3. Redeploy. The `vercel-build` script runs `scripts/migrate.mjs`, which applies `supabase/migrations/*.sql` once each (tracked in `abide_meta.migrations`), then builds. A failed migration fails the build.
+4. The site URL defaults to the Vercel production domain; set `NEXT_PUBLIC_SITE_URL` only for a custom domain.
+5. Configure Supabase Auth URLs and email as in section 1.4 below.
+
+The manual path follows.
+
 ## 1. Supabase (database + authentication)
 
 1. Create a project at supabase.com (choose a region near your users).

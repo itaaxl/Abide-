@@ -8,8 +8,16 @@ export const site = {
   tagline: "Read Scripture. Remember it. Grow in it.",
   description:
     "A calm place to read the complete Bible, search Scripture, memorize verses, follow reading plans, and keep a private prayer journal.",
-  /** Public base URL; set NEXT_PUBLIC_SITE_URL in each environment. */
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  /**
+   * Public base URL (used in auth email links, sitemaps and share metadata).
+   * NEXT_PUBLIC_SITE_URL wins; on Vercel it falls back to the project's
+   * production domain, which Vercel provides automatically.
+   */
+  url:
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}` : "") ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "") ||
+    "http://localhost:3000",
   /** Default edition for new visitors. Must be an imported edition id. */
   defaultEdition: "eng-web",
   /** Where a first-time reader is invited to start. */
