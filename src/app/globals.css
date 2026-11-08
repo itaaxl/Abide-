@@ -1,0 +1,395 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens. Every page uses these, so the product reads as one printed
+ * book: ivory paper, dark ink, restrained antique gold, hairline rules.
+ * Contrast (WCAG): ink/paper >= 12:1, muted/paper >= 4.9:1, gold text/paper >= 4.6:1
+ * in every theme (verified in docs/ACCESSIBILITY.md).
+ */
+:root,
+[data-theme="light"] {
+  --paper: #fbf7ee;
+  --surface: #fffdf8;
+  --ink: #1f1a14;
+  --muted: #5f564a;
+  --gold: #7f611b;
+  --gold-soft: #e8d9b0;
+  --rule: #e3d8c2;
+  --focus: #1d4e89;
+  --danger: #9b2c2c;
+  --success: #2f6b3a;
+  --hl-yellow: #f6e39a;
+  --hl-green: #cfe8c4;
+  --hl-blue: #cfe0f3;
+  --hl-rose: #f3d3d8;
+  color-scheme: light;
+}
+
+[data-theme="sepia"] {
+  --paper: #f2e6cd;
+  --surface: #f8eedb;
+  --ink: #33281c;
+  --muted: #5e4d39;
+  --gold: #6f5214;
+  --gold-soft: #e0c98f;
+  --rule: #d9c6a1;
+  --focus: #1d4e89;
+  --danger: #8f2424;
+  --success: #2c6033;
+  --hl-yellow: #edd585;
+  --hl-green: #c6dcae;
+  --hl-blue: #c3d4e3;
+  --hl-rose: #e8c2bf;
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --paper: #15130f;
+  --surface: #1d1a15;
+  --ink: #ece5d8;
+  --muted: #b3a998;
+  --gold: #d6b46c;
+  --gold-soft: #4a3d22;
+  --rule: #353026;
+  --focus: #8db8ee;
+  --danger: #f09a9a;
+  --success: #93c99c;
+  --hl-yellow: #5a4c17;
+  --hl-green: #2f4a2a;
+  --hl-blue: #243c57;
+  --hl-rose: #57303a;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-rule: var(--rule);
+  --color-focus: var(--focus);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --font-serif: "EB Garamond", "Amiri", Georgia, "Times New Roman", serif;
+  --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-arabic: "Amiri", "EB Garamond", serif;
+  --radius-card: 0.75rem;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 16px rgb(0 0 0 / 0.04);
+  --ease-calm: cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+:lang(ar) body,
+[dir="rtl"] .font-serif {
+  font-family: var(--font-arabic);
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--gold-soft);
+  color: var(--ink);
+}
+
+/* Hairline ornament divider */
+.rule-ornament {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--gold);
+}
+.rule-ornament::before,
+.rule-ornament::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: var(--rule);
+}
+
+/* Scripture typography */
+.scripture {
+  font-family: var(--font-serif);
+  font-size: var(--reader-size, 19px);
+  line-height: var(--reader-leading, 1.75);
+  hanging-punctuation: first;
+  font-variant-numeric: oldstyle-nums;
+}
+.scripture[dir="rtl"] {
+  font-family: var(--font-arabic);
+  font-size: calc(var(--reader-size, 19px) * 1.1);
+}
+.scripture p {
+  margin: 0 0 0.9em;
+  text-indent: 0;
+}
+.scripture .q1 {
+  padding-inline-start: 1.5em;
+  text-indent: -1em;
+  margin: 0;
+}
+.scripture .q2 {
+  padding-inline-start: 2.75em;
+  text-indent: -1em;
+  margin: 0;
+}
+.scripture .q3 {
+  padding-inline-start: 3.75em;
+  text-indent: -1em;
+  margin: 0;
+}
+.scripture .stanza {
+  margin-top: 0.9em;
+}
+.scripture .speaker {
+  font-family: var(--font-sans);
+  font-size: 0.7em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 1em 0 0.25em;
+}
+.verse-num {
+  font-family: var(--font-sans);
+  font-size: 0.62em;
+  font-weight: 600;
+  color: var(--gold);
+  vertical-align: super;
+  line-height: 0;
+  margin-inline-end: 0.2em;
+  user-select: none;
+}
+.verse {
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 150ms var(--ease-calm);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.verse:hover {
+  background: color-mix(in srgb, var(--gold-soft) 35%, transparent);
+}
+.verse[aria-pressed="true"] {
+  text-decoration: underline dotted var(--gold);
+  text-underline-offset: 0.25em;
+}
+.verse.target {
+  background: color-mix(in srgb, var(--gold-soft) 60%, transparent);
+}
+.hl-yellow { background: var(--hl-yellow); }
+.hl-green { background: var(--hl-green); }
+.hl-blue { background: var(--hl-blue); }
+.hl-rose { background: var(--hl-rose); }
+
+.note-mark {
+  font-family: var(--font-sans);
+  font-size: 0.6em;
+  color: var(--gold);
+  vertical-align: super;
+  line-height: 0;
+  padding: 0 0.1em;
+}
+
+mark.search-hit {
+  background: var(--gold-soft);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 0.05em;
+}
+
+/* Chapter fade-in */
+@keyframes chapter-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+.chapter-enter {
+  animation: chapter-in 280ms var(--ease-calm);
+}
+
+/* Flashcard flip */
+.flip-card {
+  perspective: 1200px;
+}
+.flip-inner {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 450ms var(--ease-calm);
+}
+.flip-inner.flipped {
+  transform: rotateY(180deg);
+}
+.flip-face {
+  backface-visibility: hidden;
+}
+.flip-back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .flip-inner,
+  .flip-inner.flipped {
+    transform: none;
+  }
+  .flip-inner .flip-back {
+    transform: none;
+    position: static;
+  }
+  .flip-inner:not(.flipped) .flip-back,
+  .flip-inner.flipped .flip-front {
+    display: none;
+  }
+}
+
+/* Shared component classes */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink);
+  transition: background-color 150ms var(--ease-calm), border-color 150ms var(--ease-calm);
+}
+.btn:hover {
+  border-color: var(--gold);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.btn-primary:hover {
+  background: color-mix(in srgb, var(--ink) 85%, var(--gold));
+}
+.btn-sm {
+  min-height: 36px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.85rem;
+}
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+}
+.btn-ghost:hover {
+  background: color-mix(in srgb, var(--gold-soft) 35%, transparent);
+  border-color: transparent;
+}
+.btn-danger {
+  color: var(--danger);
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+.input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.55rem 0.85rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 1rem;
+}
+.input::placeholder {
+  color: var(--muted);
+}
+.input:focus-visible {
+  border-color: var(--focus);
+}
+.label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.35rem;
+}
+.eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 600;
+}
+.prose-page h1 {
+  font-family: var(--font-serif);
+  font-size: 2.25rem;
+  line-height: 1.15;
+  margin-bottom: 1rem;
+}
+.prose-page h2 {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  margin: 2rem 0 0.75rem;
+}
+.prose-page p,
+.prose-page li {
+  line-height: 1.7;
+  margin-bottom: 0.75rem;
+}
+.prose-page ul {
+  list-style: disc;
+  padding-inline-start: 1.5rem;
+}
+.prose-page a {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.sr-only-focusable:not(:focus) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+@media print {
+  header, footer, nav, .no-print { display: none !important; }
+  body { background: white; color: black; }
+}
+
+/* Distraction-free reading: hide site chrome while keeping the exit control. */
+html[data-focus] header,
+html[data-focus] footer,
+html[data-focus] .reader-secondary {
+  display: none !important;
+}

@@ -1,0 +1,425 @@
+{
+ "edition": "arb-vd",
+ "generatedAt": "2026-11-08T12:56:11.883Z",
+ "source": {
+  "usfm": "https://ebible.org/Scriptures/arb-vd_usfm.zip",
+  "vpl": "https://ebible.org/Scriptures/arb-vd_vpl.zip",
+  "usfmSha256": "fd420ac7b224d42be23997fef298c2193d12788d95d2db7103904184cdda766a",
+  "vplSha256": "070404da2e13e641b7550b50d7e777480b2cc2667e9669f2194d909ca04cd68a"
+ },
+ "bookCount": 66,
+ "chapterCount": 1189,
+ "verseCount": 31104,
+ "vplVerseCount": 31104,
+ "books": [
+  {
+   "id": "GEN",
+   "name": "اَلتَّكْوِينُ",
+   "chapters": 50,
+   "verses": 1533
+  },
+  {
+   "id": "EXO",
+   "name": "اَلْخُرُوجُ",
+   "chapters": 40,
+   "verses": 1213
+  },
+  {
+   "id": "LEV",
+   "name": "اَللَّاوِيِّينَ",
+   "chapters": 27,
+   "verses": 859
+  },
+  {
+   "id": "NUM",
+   "name": "اَلْعَدَد",
+   "chapters": 36,
+   "verses": 1288
+  },
+  {
+   "id": "DEU",
+   "name": "اَلتَّثْنِيَة",
+   "chapters": 34,
+   "verses": 959
+  },
+  {
+   "id": "JOS",
+   "name": "يَشُوع",
+   "chapters": 24,
+   "verses": 658
+  },
+  {
+   "id": "JDG",
+   "name": "اَلْقُضَاة",
+   "chapters": 21,
+   "verses": 618
+  },
+  {
+   "id": "RUT",
+   "name": "رَاعُوث",
+   "chapters": 4,
+   "verses": 85
+  },
+  {
+   "id": "1SA",
+   "name": "صَمُوئِيلَ ٱلْأَوَّلُ",
+   "chapters": 31,
+   "verses": 810
+  },
+  {
+   "id": "2SA",
+   "name": "صَمُوئِيلَ ٱلثَّانِي",
+   "chapters": 24,
+   "verses": 695
+  },
+  {
+   "id": "1KI",
+   "name": "اَلْمُلُوكِ ٱلْأَوَّلُ",
+   "chapters": 22,
+   "verses": 816
+  },
+  {
+   "id": "2KI",
+   "name": "اَلْمُلُوكِ ٱلثَّانِي",
+   "chapters": 25,
+   "verses": 719
+  },
+  {
+   "id": "1CH",
+   "name": "أَخْبَارِ ٱلْأَيَّامِ ٱلْأَوَّلُ",
+   "chapters": 29,
+   "verses": 942
+  },
+  {
+   "id": "2CH",
+   "name": "أَخْبَارِ ٱلْأَيَّامِ ٱلثَّانِي",
+   "chapters": 36,
+   "verses": 822
+  },
+  {
+   "id": "EZR",
+   "name": "عَزْرَا",
+   "chapters": 10,
+   "verses": 280
+  },
+  {
+   "id": "NEH",
+   "name": "نَحَمْيَا",
+   "chapters": 13,
+   "verses": 406
+  },
+  {
+   "id": "EST",
+   "name": "أَسْتِير",
+   "chapters": 10,
+   "verses": 167
+  },
+  {
+   "id": "JOB",
+   "name": "أَيُّوبَ",
+   "chapters": 42,
+   "verses": 1070
+  },
+  {
+   "id": "PSA",
+   "name": "اَلْمَزَامِيرُ",
+   "chapters": 150,
+   "verses": 2461
+  },
+  {
+   "id": "PRO",
+   "name": "أَمْثَالٌ",
+   "chapters": 31,
+   "verses": 915
+  },
+  {
+   "id": "ECC",
+   "name": "اَلْجَامِعَةِ",
+   "chapters": 12,
+   "verses": 222
+  },
+  {
+   "id": "SNG",
+   "name": "نَشِيدُ ٱلْأَنْشَادِ",
+   "chapters": 8,
+   "verses": 117
+  },
+  {
+   "id": "ISA",
+   "name": "إِشَعْيَاءَ",
+   "chapters": 66,
+   "verses": 1292
+  },
+  {
+   "id": "JER",
+   "name": "إِرْمِيَا",
+   "chapters": 52,
+   "verses": 1364
+  },
+  {
+   "id": "LAM",
+   "name": "مَرَاثِي إِرْمِيَا",
+   "chapters": 5,
+   "verses": 154
+  },
+  {
+   "id": "EZK",
+   "name": "حِزْقِيَال",
+   "chapters": 48,
+   "verses": 1273
+  },
+  {
+   "id": "DAN",
+   "name": "دَانِيآل",
+   "chapters": 12,
+   "verses": 357
+  },
+  {
+   "id": "HOS",
+   "name": "هُوشَع",
+   "chapters": 14,
+   "verses": 197
+  },
+  {
+   "id": "JOL",
+   "name": "يُوئِيل",
+   "chapters": 3,
+   "verses": 73
+  },
+  {
+   "id": "AMO",
+   "name": "عَامُوس",
+   "chapters": 9,
+   "verses": 146
+  },
+  {
+   "id": "OBA",
+   "name": "عُوبَدْيَا",
+   "chapters": 1,
+   "verses": 21
+  },
+  {
+   "id": "JON",
+   "name": "يُونَان",
+   "chapters": 4,
+   "verses": 48
+  },
+  {
+   "id": "MIC",
+   "name": "مِيخَا",
+   "chapters": 7,
+   "verses": 105
+  },
+  {
+   "id": "NAM",
+   "name": "نَاحُوم",
+   "chapters": 3,
+   "verses": 47
+  },
+  {
+   "id": "HAB",
+   "name": "حَبَقُّوق",
+   "chapters": 3,
+   "verses": 56
+  },
+  {
+   "id": "ZEP",
+   "name": "صَفَنْيَا",
+   "chapters": 3,
+   "verses": 53
+  },
+  {
+   "id": "HAG",
+   "name": "حَجَّي",
+   "chapters": 2,
+   "verses": 38
+  },
+  {
+   "id": "ZEC",
+   "name": "زَكَريَّا",
+   "chapters": 14,
+   "verses": 211
+  },
+  {
+   "id": "MAL",
+   "name": "مَلَاخِي",
+   "chapters": 4,
+   "verses": 55
+  },
+  {
+   "id": "MAT",
+   "name": "إِنْجِيلُ مَتَّى",
+   "chapters": 28,
+   "verses": 1071
+  },
+  {
+   "id": "MRK",
+   "name": "إِنْجِيلُ مَرْقُسَ",
+   "chapters": 16,
+   "verses": 678
+  },
+  {
+   "id": "LUK",
+   "name": "إِنْجِيلُ لُوقَا",
+   "chapters": 24,
+   "verses": 1151
+  },
+  {
+   "id": "JHN",
+   "name": "إِنْجِيلُ يُوحَنَّا",
+   "chapters": 21,
+   "verses": 879
+  },
+  {
+   "id": "ACT",
+   "name": "أَعْمَالُ ٱلرُّسُلِ",
+   "chapters": 28,
+   "verses": 1007
+  },
+  {
+   "id": "ROM",
+   "name": "رِسَالَةُ بُولُسَ ٱلرَّسُولِ إِلَى أَهْلِ رُومِيَةَ",
+   "chapters": 16,
+   "verses": 433
+  },
+  {
+   "id": "1CO",
+   "name": "١ كورنثوس",
+   "chapters": 16,
+   "verses": 437
+  },
+  {
+   "id": "2CO",
+   "name": "رِسَالَةُ بُولُسَ ٱلرَّسُولِ ٱلثَّانِيةُ إِلَى أَهْلِ كُورِنْثُوسَ",
+   "chapters": 13,
+   "verses": 257
+  },
+  {
+   "id": "GAL",
+   "name": "رِسَالَةُ بُولُسَ ٱلرَّسُولِ إِلَى أَهْلِ غَلَاطِيَّةَ",
+   "chapters": 6,
+   "verses": 149
+  },
+  {
+   "id": "EPH",
+   "name": "رِسَالَةُ بُولُسَ ٱلرَّسُولِ إِلَى أَهْلِ أَفَسُسَ",
+   "chapters": 6,
+   "verses": 155
+  },
+  {
+   "id": "PHP",
+   "name": "رِسَالَةُ بُولُسَ ٱلرَّسُولِ إِلَى أَهْلِ فِيلِبِّي",
+   "chapters": 4,
+   "verses": 104
+  },
+  {
+   "id": "COL",
+   "name": "رِسَالَةُ بُولُسَ ٱلرَّسُولِ إِلَى أَهْلِ كُولُوسِّي",
+   "chapters": 4,
+   "verses": 95
+  },
+  {
+   "id": "1TH",
+   "name": "رِسَالَةُ بُولُسَ ٱلرَّسُولِ ٱلأُولَى إِلَى أَهْلِ تَسَالُونِيكِي",
+   "chapters": 5,
+   "verses": 89
+  },
+  {
+   "id": "2TH",
+   "name": "رِسَالَةُ بُولُسَ ٱلرَّسُولِ ٱلثَّانِيةُ إِلَى أَهْلِ تَسَالُونِيكِي",
+   "chapters": 3,
+   "verses": 47
+  },
+  {
+   "id": "1TI",
+   "name": "رِسَالَةُ بُولُسَ ٱلرَّسُولِ ٱلْأُولَى إِلَى تِيمُوثَاوُسَ",
+   "chapters": 6,
+   "verses": 114
+  },
+  {
+   "id": "2TI",
+   "name": "رِسَالَةُ بُولُسَ ٱلرَّسُولِ ٱلثَّانِيةُ إِلَى تِيمُوثَاوُسَ",
+   "chapters": 4,
+   "verses": 83
+  },
+  {
+   "id": "TIT",
+   "name": "رِسَالَةُ بُولُسَ ٱلرَّسُولِ إِلَى تِيطُسَ",
+   "chapters": 3,
+   "verses": 46
+  },
+  {
+   "id": "PHM",
+   "name": "رِسَالَةُ بُولُسَ ٱلرَّسُولِ إِلَى فِلِيمُونَ",
+   "chapters": 1,
+   "verses": 25
+  },
+  {
+   "id": "HEB",
+   "name": "اَلرِّسَالَةُ إِلَى ٱلْعِبْرَانِيِّينَ",
+   "chapters": 13,
+   "verses": 303
+  },
+  {
+   "id": "JAS",
+   "name": "رِسَالَةُ يَعْقُوبَ",
+   "chapters": 5,
+   "verses": 108
+  },
+  {
+   "id": "1PE",
+   "name": "رِسَالَةُ بُطْرُسَ ٱلرَّسُولِ ٱلْأُولَى",
+   "chapters": 5,
+   "verses": 105
+  },
+  {
+   "id": "2PE",
+   "name": "رِسَالَةُ بُطْرُسَ ٱلرَّسُولِ ٱلثَّانِيَةُ",
+   "chapters": 3,
+   "verses": 61
+  },
+  {
+   "id": "1JN",
+   "name": "رِسَالَةُ يُوحَنَّا ٱلرَّسُولِ ٱلْأُولَى",
+   "chapters": 5,
+   "verses": 105
+  },
+  {
+   "id": "2JN",
+   "name": "رِسَالَةُ يُوحَنَّا ٱلرَّسُولِ ٱلثَّانِيَةُ",
+   "chapters": 1,
+   "verses": 13
+  },
+  {
+   "id": "3JN",
+   "name": "رِسَالَةُ يُوحَنَّا ٱلرَّسُولِ ٱلثَّالِثَةُ",
+   "chapters": 1,
+   "verses": 15
+  },
+  {
+   "id": "JUD",
+   "name": "رِسَالَةُ يَهُوذَا",
+   "chapters": 1,
+   "verses": 25
+  },
+  {
+   "id": "REV",
+   "name": "رُؤْيَا يُوحَنَّا ٱللَّاهُوتِيِّ",
+   "chapters": 22,
+   "verses": 404
+  }
+ ],
+ "duplicates": [],
+ "gaps": [],
+ "ordering": [],
+ "emptyVerses": [],
+ "parserIssues": [],
+ "vplComparison": {
+  "compared": 31104,
+  "matched": 31104,
+  "mismatches": [],
+  "missingInImport": [],
+  "missingInVpl": []
+ },
+ "passed": true
+}
