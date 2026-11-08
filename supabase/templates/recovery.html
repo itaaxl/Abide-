@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>Abide</title></head>
+<body style="margin:0;padding:0;background:#f2ead8;">
+  <div style="display:none;max-height:0;overflow:hidden;">Reset your Abide password.</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2ead8;">
+    <tr><td align="center" style="padding:28px 12px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#fffdf8;border:1px solid #e3d8c2;border-radius:14px;">
+        <tr><td align="center" style="padding:28px 32px 6px 32px;font:24px/1 Georgia,'Times New Roman',serif;color:#1f1a14;">
+          <span style="color:#7f611b;">&#10013;</span>&nbsp;Abide
+        </td></tr>
+        <tr><td align="center" style="padding:0 32px;"><div style="height:1px;background:#e3d8c2;margin:14px 0;"></div></td></tr>
+        <tr><td style="padding:4px 32px 0 32px;font:22px/1.3 Georgia,'Times New Roman',serif;color:#1f1a14;">Reset your password</td></tr>
+        <tr><td style="padding:10px 32px 0 32px;font:15px/1.6 Georgia,'Times New Roman',serif;color:#1f1a14;">We received a request to reset the password for your Abide account. Tap the button, or enter this code on the reset page:</td></tr>
+          <tr><td style="padding:8px 32px 0 32px;font:15px/1.6 Georgia,'Times New Roman',serif;color:#5f564a;">Your reset code</td></tr>
+          <tr><td align="center" style="padding:12px 32px 4px 32px;">
+            <div style="display:inline-block;padding:14px 22px;border:1px solid #e3d8c2;border-radius:10px;background:#fbf7ee;font:600 30px/1 'Courier New',monospace;letter-spacing:6px;color:#1f1a14;">{{ .Token }}</div>
+          </td></tr>
+        <tr><td align="center" style="padding:18px 32px 8px 32px;">
+          <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/auth/reset" style="display:inline-block;padding:13px 26px;border-radius:999px;background:#1f1a14;color:#fbf7ee;font:600 15px/1 Arial,Helvetica,sans-serif;text-decoration:none;">Choose a new password</a>
+        </td></tr>
+        <tr><td style="padding:12px 32px 0 32px;font:13px/1.6 Arial,Helvetica,sans-serif;color:#5f564a;">The code and button work once and expire in 15 minutes. Only the newest email is valid.</td></tr>
+        <tr><td style="padding:12px 32px 28px 32px;font:13px/1.6 Arial,Helvetica,sans-serif;color:#5f564a;">
+          If you didn’t request this, you can safely ignore this email. Nothing will change, and no one can use it without access to your inbox.
+        </td></tr>
+      </table>
+      <p style="margin:16px 0 0 0;font:12px/1.5 Arial,Helvetica,sans-serif;color:#7a6f60;">Abide · Read Scripture. Remember it. Grow in it.<br>This message was sent to {{ .Email }} because of a request on {{ .SiteURL }}.</p>
+    </td></tr>
+  </table>
+</body>
+</html>

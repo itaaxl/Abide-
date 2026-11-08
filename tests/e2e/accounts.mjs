@@ -76,6 +76,8 @@ async function signUp(p, u) {
 }
 async function signIn(p, u, password = u.password) {
   await p.goto(`${BASE}/auth/sign-in`);
+  const tab = p.getByRole("tab", { name: "Use password" });
+  if (await tab.count()) await tab.click(); // tabs only exist when email codes are enabled
   await p.getByLabel("Email").fill(u.email);
   await p.getByLabel("Password", { exact: true }).fill(password);
   await p.getByRole("button", { name: "Sign in" }).click();
@@ -102,7 +104,7 @@ await check("sign-up shows check-your-email state (not signed in)", async () => 
 
 await check("unverified sign-in is refused with a resend option", async () => {
   await signIn(page, A);
-  await page.getByText(/verify your email/i).first().waitFor();
+  await page.getByText(/hasn’t been verified yet/i).first().waitFor();
   assert(await page.getByRole("button", { name: /Resend verification/ }).isVisible(), "no resend");
 });
 
@@ -250,8 +252,8 @@ await check("password reset via one-time link, then sign in with new password", 
   const pr = await ctxA.newPage();
   await pr.goto(`${BASE}/auth/forgot`);
   await pr.getByLabel("Email").fill(A.email);
-  await pr.getByRole("button", { name: "Send reset link" }).click();
-  await pr.getByText(/reset link is on its way/).waitFor();
+  await pr.getByRole("button", { name: "Send reset email" }).click();
+  await pr.getByText(/we sent a reset email/).waitFor();
   await pr.goto(await latestLink(A.email, "recovery"));
   await pr.waitForURL(/\/auth\/reset/);
   await pr.getByLabel("New password", { exact: true }).fill(A.newPassword);

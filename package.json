@@ -18,7 +18,9 @@
     "test:db": "bash scripts/test-db.sh",
     "test:e2e:accounts": "node tests/e2e/accounts.mjs",
     "db:migrate": "node scripts/migrate.mjs",
-    "vercel-build": "node scripts/migrate.mjs && next build"
+    "vercel-build": "node scripts/migrate.mjs && next build",
+    "test:e2e:email": "node tests/e2e/email-auth.mjs",
+    "supabase:auth-config": "node scripts/supabase-auth-config.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.6.0",
