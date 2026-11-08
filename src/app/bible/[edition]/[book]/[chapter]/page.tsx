@@ -28,6 +28,10 @@ export default async function ChapterPage({ params, searchParams }: P) {
   if (book !== book.toUpperCase()) redirect(`/bible/${id}/${book.toUpperCase()}/${rawChapter}`);
   const chapter = Number(rawChapter);
   if (!Number.isInteger(chapter) || chapter < 1) notFound();
+  const bookMeta = edition.books.find((b) => b.id === book);
+  // A real book with a chapter beyond its end is a 404; a book missing from
+  // this edition gets the reader's explanatory "not in this translation" state.
+  if (bookMeta && chapter > bookMeta.chapters.length) notFound();
   const parallel = typeof sp.parallel === "string" ? sp.parallel : null;
   return <ReaderView edition={edition} book={book} chapter={chapter} target={parseVerseParam(sp.v)} parallel={parallel} />;
 }

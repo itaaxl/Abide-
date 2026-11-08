@@ -186,7 +186,7 @@ body {
 .verse:hover {
   background: color-mix(in srgb, var(--gold-soft) 35%, transparent);
 }
-.verse[aria-pressed="true"] {
+.verse.selected {
   text-decoration: underline dotted var(--gold);
   text-underline-offset: 0.25em;
 }

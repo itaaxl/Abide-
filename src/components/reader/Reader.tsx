@@ -275,7 +275,7 @@ export function Reader(props: ReaderProps) {
     const v = p.verse.v;
     const hl = annotations?.highlights[v];
     const isTarget = props.target && v >= props.target.from && v <= props.target.to;
-    const cls = ["verse", hl ? `hl-${hl}` : "", isTarget ? "target" : ""].join(" ");
+    const cls = ["verse", hl ? `hl-${hl}` : "", isTarget ? "target" : "", selected.includes(v) ? "selected" : ""].join(" ");
     return (
       <Fragment key={key}>
         {p.first && (
@@ -294,7 +294,6 @@ export function Reader(props: ReaderProps) {
         <span
           className={cls}
           data-verse={v}
-          aria-pressed={selected.includes(v)}
           onClick={() => toggle(v)}
         >
           {p.text}

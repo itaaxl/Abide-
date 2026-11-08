@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { getEdition } from "@/lib/bible/provider";
 import { resolveBook } from "@/lib/bible/reference";
 import { getDictionary } from "@/lib/request";
+import { BOOK_INTROS } from "@/content/book-intros";
 
 export async function generateMetadata({ params }: PageProps<"/bible/[edition]/[book]">): Promise<Metadata> {
   const { edition: id, book } = await params;
@@ -32,6 +33,12 @@ export default async function BookPage({ params }: PageProps<"/bible/[edition]/[
       </Link>
       <h1 className="mt-4 font-serif text-4xl">{book.name}</h1>
       {book.longName !== book.name && <p className="mt-1 font-serif italic text-muted">{book.longName}</p>}
+      {BOOK_INTROS[book.id] && (
+        <aside className="card mt-6 p-5" dir="ltr" lang="en">
+          <p className="text-xs uppercase tracking-wider text-muted">Introduction · editorial summary, not Scripture</p>
+          <p className="mt-2 leading-relaxed">{BOOK_INTROS[book.id]}</p>
+        </aside>
+      )}
       <h2 className="eyebrow mt-8">{t.reader.chapters}</h2>
       <ul className="mt-3 grid grid-cols-5 gap-2 sm:grid-cols-8">
         {book.chapters.map((verses, i) => (
