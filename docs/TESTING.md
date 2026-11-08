@@ -33,3 +33,12 @@ Sign-up field validation and live password rules; show-password; check-your-emai
 - AI responses from Anthropic (no API key in this environment). The full pipeline is tested with a mocked provider; the real adapter (`src/lib/guidance/anthropic.ts`) compiles against SDK 1.6.0 types but has not made a live call.
 - Vercel deployment, custom domain, and auth redirects on the deployed domain.
 - Manual screen-reader testing.
+
+## Authentication email update (2026-11-08)
+| Suite | Where | Result |
+| --- | --- | --- |
+| `npm run test:e2e:email` | local Supabase + Mailpit, codes on | **12 / 12** — branded verification email (code + button, expiry, ignore text), wrong code rejected, verify by code, session persistence, code sign-in (default method, 8-digit input), used button rejected, fresh button signs in, attempt limit, neutral unknown-email message, password sign-in, recovery by code |
+| `npm run test:e2e:accounts` | local, codes on and off | **28 / 28** both |
+| `tests/e2e/live-auth.mjs` | **live** https://abide-omega.vercel.app with real Supabase tokens (admin-generated, no mailbox) | **8 / 8** — Supabase verify links redirect to the live site (not localhost), verification signs in, session persists, bookmark + note persist, used link rejected, recovery → new password → password sign-in, honest error when the email can't be sent, no page opened localhost |
+
+Not yet tested live: actual email delivery through Resend and code entry in production (blocked on a verified sending domain; codes are off in production until then). Resend delivery logs: no emails sent yet.
