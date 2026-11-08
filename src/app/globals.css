@@ -3,7 +3,7 @@
 /*
  * Design tokens. Every page uses these, so the product reads as one printed
  * book: ivory paper, dark ink, restrained antique gold, hairline rules.
- * Contrast (WCAG): ink/paper >= 12:1, muted/paper >= 4.9:1, gold text/paper >= 4.6:1
+ * Measured contrast (WCAG): ink/paper >= 11.6:1, muted/paper >= 6.5:1, gold/paper >= 5.4:1
  * in every theme (verified in docs/ACCESSIBILITY.md).
  */
 :root,

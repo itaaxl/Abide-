@@ -23,7 +23,7 @@ export default async function CheckEmailPage({ searchParams }: PageProps<"/auth/
         <li>The link can be used once and expires after a limited time.</li>
         <li>Check your spam or promotions folder if it hasn’t arrived in a few minutes.</li>
       </ul>
-      {email && <ResendForm email={email} />}
+      {email && <ResendForm email={email} initialCooldown={60} />}
     </AuthShell>
   );
 }

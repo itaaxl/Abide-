@@ -61,7 +61,7 @@ describe("imported datasets", () => {
     const ps = await getChapter("eng-web", "PSA", 3);
     expect(ps?.title).toBe("A Psalm by David, when he fled from Absalom his son.");
     expect(ps?.verses[0].t.startsWith("Yahweh, how my adversaries")).toBe(true);
-    // LSG numbers the Psalm title as verse 1 — edition-specific numbering is preserved.
+    // LSG counts this (long) Psalm title as verse 1 — edition-specific numbering is preserved.
     const psFr = await getChapter("fra-lsg", "PSA", 3);
     expect(psFr?.verses[0].t).toContain("Psaume de David");
     expect(psFr?.verses).toHaveLength(9);

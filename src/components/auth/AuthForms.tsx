@@ -182,9 +182,9 @@ export function SignInForm({ next }: { next: string }) {
   );
 }
 
-export function ResendForm({ email }: { email: string }) {
+export function ResendForm({ email, initialCooldown = 0 }: { email: string; initialCooldown?: number }) {
   const [state, action, pending] = useActionState(resendVerificationAction, {});
-  const [cooldown, setCooldown] = useState(0);
+  const [cooldown, setCooldown] = useState(initialCooldown);
   useEffect(() => {
     if (cooldown <= 0) return;
     const t = setTimeout(() => setCooldown((c) => c - 1), 1000);

@@ -29,10 +29,11 @@ export async function ParallelColumn({
   else {
     const a = primaryBook?.chapters[chapter - 1];
     const b = bookMeta.chapters[chapter - 1];
-    if (a !== b) warnings.push(`Verse counts differ (${primary.abbreviation}: ${a}, ${secondary.abbreviation}: ${b}). Numbers may not line up.`);
-    if (book === "PSA" && primary.psalmTitles !== secondary.psalmTitles)
+    if (a !== b)
       warnings.push(
-        `${secondary.abbreviation} numbers Psalm titles differently from ${primary.abbreviation}, so verse numbers can be offset by one.`,
+        book === "PSA" && primary.psalmTitles !== secondary.psalmTitles
+          ? `${secondary.abbreviation} numbers this Psalm’s title differently from ${primary.abbreviation} (${a} vs ${b} verses), so verse numbers are offset.`
+          : `Verse counts differ (${primary.abbreviation}: ${a}, ${secondary.abbreviation}: ${b}). Numbers may not line up.`,
       );
   }
 

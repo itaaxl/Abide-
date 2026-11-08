@@ -24,16 +24,15 @@ export default async function Home() {
   const edition = (await getEdition(pos?.edition ?? prefs.edition)) ?? (await getEdition(site.defaultEdition))!;
   const start = edition.books.some((b) => b.id === site.startingPoint.book) ? site.startingPoint.book : edition.books[0].id;
   const current = pos && edition.books.some((b) => b.id === pos.book) ? { book: pos.book, chapter: pos.chapter } : { book: start, chapter: 1 };
-  const startName = edition.books.find((b) => b.id === start)?.name ?? start;
 
   return (
     <>
       <TimezoneSync current={prefs.timezone} />
       <section className="border-b border-rule bg-surface/40">
         <div className="mx-auto max-w-4xl px-4 pb-10 pt-12 text-center">
-          <h1 className="font-serif text-4xl leading-tight sm:text-5xl">{site.tagline}</h1>
+          <h1 className="font-serif text-4xl leading-tight sm:text-5xl">{t.home.tagline}</h1>
           <p className="mx-auto mt-3 max-w-xl text-muted">
-            The complete Bible in English, French and Arabic — free to read, no account needed.
+            {t.home.intro}
           </p>
           <div className="mx-auto mt-6 max-w-2xl">
             <SearchBar t={t.search} edition={edition.id} large />
@@ -60,9 +59,9 @@ export default async function Home() {
         ) : (
           <section className="card flex flex-col justify-between p-6">
             <div>
-              <h2 className="font-serif text-2xl">New to the Bible?</h2>
+              <h2 className="font-serif text-2xl">{t.home.newTitle}</h2>
               <p className="mt-2 text-muted">
-                The Bible is a library of 66 books (more in some traditions). A good place to begin is the Gospel of {startName}, which tells the story of Jesus.
+                {t.home.newBody}
               </p>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -70,7 +69,7 @@ export default async function Home() {
                 {t.footer.guide}
               </Link>
               <Link href="/plans/gospel-of-john" className="btn btn-sm">
-                21-day plan
+                {t.home.plan}
               </Link>
               <Link href="/discover" className="btn btn-sm">
                 {t.nav.discover}

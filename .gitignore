@@ -45,3 +45,6 @@ next-env.d.ts
 # Playwright / test output
 /test-results
 /playwright-report
+
+# allow the template
+!.env.example

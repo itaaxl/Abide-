@@ -15,7 +15,8 @@
     "db:import-bible": "tsx scripts/db-import-bible.ts",
     "db:seed": "tsx scripts/db-seed.ts",
     "check": "npm run lint && npm run typecheck && npm run test && npm run build",
-    "test:db": "bash scripts/test-db.sh"
+    "test:db": "bash scripts/test-db.sh",
+    "test:e2e:accounts": "node tests/e2e/accounts.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.6.0",
@@ -40,6 +41,7 @@
     "eslint-config-next": "16.4.5",
     "fflate": "^0.8.3",
     "playwright": "^1.63.0",
+    "supabase": "^3.0.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5",

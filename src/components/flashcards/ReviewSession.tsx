@@ -98,16 +98,13 @@ export function ReviewSession({ cards, practice, timezone, target, reviewedToday
       <div className="flip-card">
         <div
           className={`flip-inner ${flipped ? "flipped" : ""}`}
-          role="button"
-          tabIndex={0}
-          aria-label={flipped ? "Card answer shown" : "Show answer"}
-          aria-live="polite"
+          // Mouse/touch convenience only; keyboard and screen readers use the "Show answer" button.
           onClick={() => setFlipped(true)}
         >
-          <div className="flip-face flip-front card min-h-72 p-8">
+          <div className="flip-face flip-front card min-h-72 p-8" inert={flipped}>
             <Face card={card} side="front" />
           </div>
-          <div className="flip-face flip-back card min-h-72 p-8">
+          <div className="flip-face flip-back card min-h-72 p-8" inert={!flipped}>
             <Face card={card} side="back" />
           </div>
         </div>

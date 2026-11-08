@@ -95,7 +95,7 @@ await check("public share page shows Scripture only, with metadata", async () =>
 
 await check("parallel reading warns about Psalm numbering", async () => {
   await page.goto(`${BASE}/bible/eng-web/PSA/3?parallel=fra-lsg`, { waitUntil: "networkidle" });
-  assert(await page.getByText(/numbers Psalm titles differently/).isVisible(), "no warning");
+  assert(await page.getByText(/numbers this Psalm’s title differently/).isVisible(), "no warning");
 });
 
 await check("Arabic edition renders right-to-left", async () => {

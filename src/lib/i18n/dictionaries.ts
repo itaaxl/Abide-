@@ -114,6 +114,13 @@ const en = {
     guide: "Beginner’s guide",
     note: "Scripture text from public-domain editions. Not affiliated with any church or publisher.",
   },
+  home: {
+    tagline: "Read Scripture. Remember it. Grow in it.",
+    intro: "The complete Bible in English, French and Arabic — free to read, no account needed.",
+    newTitle: "New to the Bible?",
+    newBody: "The Bible is a library of 66 books (more in some traditions). A good place to begin is the Gospel of John, which tells the story of Jesus.",
+    plan: "21-day plan",
+  },
   daily: {
     title: "Daily Verse",
     today: "Today’s verse",
@@ -239,6 +246,13 @@ const fr: Dictionary = {
     guide: "Guide du débutant",
     note: "Textes bibliques issus d’éditions du domaine public. Sans affiliation avec une Église ou un éditeur.",
   },
+  home: {
+    tagline: "Lire l’Écriture. La retenir. Y grandir.",
+    intro: "La Bible complète en anglais, en français et en arabe — lecture libre, sans compte.",
+    newTitle: "Nouveau dans la Bible ?",
+    newBody: "La Bible est une bibliothèque de 66 livres (davantage dans certaines traditions). L’Évangile de Jean, qui raconte l’histoire de Jésus, est un bon point de départ.",
+    plan: "Plan de 21 jours",
+  },
   daily: {
     title: "Verset du jour",
     today: "Verset d’aujourd’hui",
@@ -361,6 +375,13 @@ const ar: Dictionary = {
     editions: "ترجمات الكتاب المقدس",
     guide: "دليل المبتدئين",
     note: "النصوص الكتابية من ترجمات في الملك العام. لا ارتباط لنا بأي كنيسة أو ناشر.",
+  },
+  home: {
+    tagline: "اقرأ الكلمة. احفظها. انمُ فيها.",
+    intro: "الكتاب المقدس كاملًا بالإنجليزية والفرنسية والعربية — قراءة مجانية بلا حساب.",
+    newTitle: "جديد على الكتاب المقدس؟",
+    newBody: "الكتاب المقدس مكتبة من 66 سفرًا (وأكثر في بعض التقاليد). إنجيل يوحنا، الذي يروي قصة يسوع، بداية جيدة.",
+    plan: "خطة 21 يومًا",
   },
   daily: {
     title: "آية اليوم",

@@ -46,6 +46,9 @@ export async function signUpAction(_: FormState, formData: FormData): Promise<Fo
     if (/password/i.test(error.message)) return { fieldErrors: { password: error.message }, email: email.data };
     return { error: "We couldn’t create the account. Please check your details and try again." };
   }
+  // The auth server allows one email per address per minute; occupy the resend
+  // window so an early "resend" can't rotate the token without sending a new email.
+  await consume(`resend:${email.data}`, 1, 60);
   redirect(`/auth/check-email?email=${encodeURIComponent(email.data!)}`);
 }
 
@@ -58,8 +61,9 @@ export async function resendVerificationAction(_: FormState, formData: FormData)
   // Server-side cooldown: 1 per 60s per address, 5 per hour per network.
   if (!(await consume(`resend:${email.data}`, 1, 60)) || !(await consume(`resend-ip:${ip}`, 5, 3600)))
     return { error: "Please wait a minute before requesting another email.", email: email.data };
-  await supabase.auth.resend({ type: "signup", email: email.data, options: { emailRedirectTo: callbackUrl("/") } });
-  return { message: "If that address has an unverified account, we sent a new verification email.", email: email.data };
+  const { error } = await supabase.auth.resend({ type: "signup", email: email.data, options: { emailRedirectTo: callbackUrl("/") } });
+  if (error?.status === 429) return { error: "Please wait a minute before requesting another email.", email: email.data };
+  return { message: "If that address has an unverified account, we sent a new verification email. Use the newest link.", email: email.data };
 }
 
 export async function signInAction(_: FormState, formData: FormData): Promise<FormState> {

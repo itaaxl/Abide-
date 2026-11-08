@@ -22,7 +22,7 @@ export default async function EditionsPage() {
             <li>Rights: <strong>{e.license.status}</strong>. {e.license.summary}</li>
             <li>Source: <a href={e.source.url}>{e.source.publisher}</a> (retrieved {e.source.retrievedAt.slice(0, 10)}), <a href={e.license.copyrightUrl}>copyright page</a></li>
             <li>Attribution used when copying: “{e.license.attribution}”</li>
-            <li>Psalm titles: {e.psalmTitles === "verse-one" ? "counted as verse 1 (numbering differs from English Bibles)" : "printed separately before verse 1"}</li>
+            <li>Psalm titles: {e.psalmTitles === "verse-one" ? "included in verse 1, and for longer titles counted as their own verse(s), so some Psalms are numbered differently from English Bibles" : "printed separately before verse 1"}</li>
           </ul>
           <Link href={`/bible/${e.id}`}>Browse books →</Link>
         </section>
