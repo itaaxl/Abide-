@@ -14,7 +14,8 @@
     "bible:import": "tsx scripts/import-bible.ts",
     "db:import-bible": "tsx scripts/db-import-bible.ts",
     "db:seed": "tsx scripts/db-seed.ts",
-    "check": "npm run lint && npm run typecheck && npm run test && npm run build"
+    "check": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "test:db": "bash scripts/test-db.sh"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.6.0",
