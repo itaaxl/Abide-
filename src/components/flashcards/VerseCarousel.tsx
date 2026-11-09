@@ -215,7 +215,7 @@ function VerseCard({ card, labels, canSave, showSave }: { card: CarouselCard; la
         <div className="mt-4 flex flex-wrap items-center gap-1">
           {showSave &&
             (canSave ? (
-              <button type="button" className="btn btn-sm btn-ghost" onClick={save} disabled={pending || saved} aria-pressed={saved}>
+              <button type="button" className="btn btn-sm btn-ghost" onClick={save} disabled={pending || saved} aria-busy={pending} aria-pressed={saved}>
                 <Icon d={saved ? "M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1Z" : "M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1Z"} filled={saved} />
                 {saved ? labels.saved : labels.save}
               </button>

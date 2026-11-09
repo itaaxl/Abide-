@@ -16,7 +16,7 @@ export async function SiteFooter() {
     { href: "/terms", label: t.footer.terms },
   ];
   return (
-    <footer className="no-print mt-16 border-t border-rule">
+    <footer className="site-footer no-print mt-16 border-t border-rule">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 text-sm text-muted md:flex-row md:items-start md:justify-between">
         <div className="max-w-sm space-y-2">
           <p className="flex items-center gap-2 text-lg font-bold tracking-tight text-ink"><LogoMark className="h-6 w-6" />{site.name}</p>

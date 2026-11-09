@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
-type Key = "bible" | "flashcards" | "guidance" | "plans" | "watch" | "library" | "journal" | "discover";
+type Key = "bible" | "flashcards" | "guidance" | "plans" | "library";
 
 const ITEMS: { key: Key; href: string; match: RegExp; icon: React.ReactNode }[] = [
   {
@@ -33,83 +33,81 @@ const ITEMS: { key: Key; href: string; match: RegExp; icon: React.ReactNode }[] 
     icon: <path d="M7 3v3M17 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1ZM8.5 14l2.2 2.2L15.5 11.5" />,
   },
   {
-    key: "watch",
-    href: "/watch",
-    match: /^\/watch/,
-    icon: <path d="M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1ZM10 9.5v5l4.5-2.5L10 9.5ZM8 21h8" />,
-  },
-  {
     key: "library",
     href: "/library",
-    match: /^\/library/,
+    // Journal, Discover and Watch are reached from the Library.
+    match: /^\/(library|journal|discover|watch)/,
     icon: <path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1Z" />,
-  },
-  {
-    key: "journal",
-    href: "/journal",
-    match: /^\/journal/,
-    icon: <path d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6V3ZM6 3v18M10 8h5M10 12h5M3.5 7H6M3.5 12H6M3.5 17H6" />,
-  },
-  {
-    key: "discover",
-    href: "/discover",
-    match: /^\/discover/,
-    icon: <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM15.5 8.5l-2 5-5 2 2-5 5-2Z" />,
   },
 ];
 
+const LAST_CHAPTER = "abide:last-chapter";
+const CHAPTER_PATH = /^\/bible\/[a-z]{3}-[a-z0-9-]+\/[1-3A-Z]{3}\/\d+$/;
+
 /**
- * Fixed bottom navigation. Every main section is one tap away (no "More"
- * menu). On phones the bar scrolls sideways with snap points; on wider
- * screens it becomes a centered floating bar. Respects the safe area.
+ * Fixed bottom navigation with five sections that always fit on a phone.
+ * Respects the bottom safe area; pages reserve its height (see globals.css)
+ * so content is never hidden behind it. The pressed tab highlights at once,
+ * before the next page arrives.
  */
 export function BottomNav({ t }: { t: Dictionary["tabs"] }) {
   const pathname = usePathname() ?? "/";
-  const listRef = useRef<HTMLUListElement>(null);
+  const [bibleHref, setBibleHref] = useState("/bible");
 
+  // Remember the last chapter read so the Bible tab opens it directly
+  // (no extra server redirect through /bible).
   useEffect(() => {
-    // Scroll the bar itself (not scrollIntoView, which would also move the
-    // browser's keyboard focus starting point past the skip link).
-    const list = listRef.current;
-    const active = list?.querySelector<HTMLElement>('[aria-current="page"]');
-    if (!list || !active || list.scrollWidth <= list.clientWidth) return;
-    const l = list.getBoundingClientRect();
-    const a = active.getBoundingClientRect();
-    list.scrollLeft += a.left + a.width / 2 - (l.left + l.width / 2);
+    try {
+      if (CHAPTER_PATH.test(pathname)) localStorage.setItem(LAST_CHAPTER, pathname);
+      const last = localStorage.getItem(LAST_CHAPTER);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reads browser-only storage after hydration
+      if (last && CHAPTER_PATH.test(last)) setBibleHref(last);
+    } catch {
+      /* storage unavailable: keep /bible */
+    }
   }, [pathname]);
 
   return (
     <nav
       aria-label={t.primary}
-      className="bottom-nav no-print fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-surface/85 lg:inset-x-auto lg:bottom-4 lg:left-1/2 lg:-translate-x-1/2 lg:rounded-full lg:border lg:pb-0 lg:shadow-[0_8px_30px_rgb(0_0_0/0.10)]"
+      className="bottom-nav no-print fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-surface/85 lg:inset-x-auto lg:bottom-4 lg:left-1/2 lg:w-[30rem] lg:-translate-x-1/2 lg:rounded-full lg:border lg:pb-0 lg:shadow-[0_8px_30px_rgb(0_0_0/0.10)]"
     >
-      <ul ref={listRef} className="no-scrollbar flex h-[var(--nav-h)] snap-x snap-mandatory items-stretch overflow-x-auto px-1 lg:overflow-visible lg:px-2">
+      <ul className="mx-auto grid h-[var(--nav-h)] max-w-lg grid-cols-5 items-stretch">
         {ITEMS.map((item) => {
           const active = item.match.test(pathname);
           return (
-            <li key={item.key} className="shrink-0 snap-center">
+            <li key={item.key} className="min-w-0">
               <Link
-                href={item.href}
+                href={item.key === "bible" ? bibleHref : item.href}
                 aria-current={active ? "page" : undefined}
-                className={`group flex h-full min-w-[76px] flex-col items-center justify-center gap-1 px-2 text-[11px] font-semibold leading-none lg:min-w-[84px] ${
+                className={`tab-link group flex h-full flex-col items-center justify-center gap-0.5 px-0.5 text-[10.5px] font-semibold leading-tight ${
                   active ? "text-gold" : "text-muted hover:text-ink"
                 }`}
               >
-                <span
-                  className={`flex h-8 w-12 items-center justify-center rounded-full transition-colors ${
-                    active ? "bg-gold-soft" : "group-hover:bg-gold-soft/50"
-                  }`}
-                >
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.1 : 1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    {item.icon}
-                  </svg>
-                </span>
-                <span>{t[item.key]}</span>
+                <TabIcon active={active}>{item.icon}</TabIcon>
+                <span className="max-w-full truncate">{t[item.key]}</span>
               </Link>
             </li>
           );
         })}
       </ul>
     </nav>
+  );
+}
+
+/** Icon pill; also shows the pending state while the tapped page loads. */
+function TabIcon({ active, children }: { active: boolean; children: React.ReactNode }) {
+  const { pending } = useLinkStatus();
+  return (
+    <span
+      className={`tab-pill relative flex h-7 w-12 items-center justify-center rounded-full ${
+        active || pending ? "bg-gold-soft text-gold" : "group-hover:bg-gold-soft/50"
+      }`}
+      data-pending={pending || undefined}
+    >
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active || pending ? 2.1 : 1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        {children}
+      </svg>
+    </span>
   );
 }

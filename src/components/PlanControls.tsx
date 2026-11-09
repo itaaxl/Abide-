@@ -22,7 +22,7 @@ export function EnrollButton({ slug, edition, canEnroll }: { slug: string; editi
   if (!canEnroll) return null;
   return (
     <>
-      <button className="btn btn-primary" disabled={pending} onClick={() => run(() => enrollPlan(slug, edition))}>
+      <button className="btn btn-primary" disabled={pending} aria-busy={pending} onClick={() => run(() => enrollPlan(slug, edition))}>
         Start this plan
       </button>
       {error && <p role="alert" className="text-sm text-danger">{error}</p>}
@@ -35,16 +35,16 @@ export function EnrollmentControls({ id, status, behind }: { id: string; status:
   return (
     <div className="flex flex-wrap items-center gap-2">
       {status === "paused" ? (
-        <button className="btn btn-sm btn-primary" disabled={pending} onClick={() => run(() => setPlanStatus(id, "active"))}>Resume</button>
+        <button className="btn btn-sm btn-primary" disabled={pending} aria-busy={pending} onClick={() => run(() => setPlanStatus(id, "active"))}>Resume</button>
       ) : status === "active" ? (
-        <button className="btn btn-sm" disabled={pending} onClick={() => run(() => setPlanStatus(id, "paused"))}>Pause</button>
+        <button className="btn btn-sm" disabled={pending} aria-busy={pending} onClick={() => run(() => setPlanStatus(id, "paused"))}>Pause</button>
       ) : null}
       {behind && (
-        <button className="btn btn-sm" disabled={pending} onClick={() => run(() => shiftPlanSchedule(id))}>
+        <button className="btn btn-sm" disabled={pending} aria-busy={pending} onClick={() => run(() => shiftPlanSchedule(id))}>
           Shift schedule to start from today
         </button>
       )}
-      <button className="btn btn-sm btn-ghost btn-danger" disabled={pending} onClick={() => confirm("Leave this plan? Your completed days will no longer be shown.") && run(() => setPlanStatus(id, "left"))}>
+      <button className="btn btn-sm btn-ghost btn-danger" disabled={pending} aria-busy={pending} onClick={() => confirm("Leave this plan? Your completed days will no longer be shown.") && run(() => setPlanStatus(id, "left"))}>
         Leave plan
       </button>
       {error && <p role="alert" className="w-full text-sm text-danger">{error}</p>}
@@ -60,7 +60,7 @@ export function DayToggle({ enrollmentId, day, done }: { enrollmentId: string; d
       <button
         className={`btn btn-sm ${checked ? "btn-primary" : ""}`}
         aria-pressed={checked}
-        disabled={pending}
+        disabled={pending} aria-busy={pending}
         onClick={() => {
           const next = !checked;
           setChecked(next);

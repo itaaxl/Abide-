@@ -94,7 +94,7 @@
 
 :root {
   /* Height of the bottom navigation, excluding the device safe area. */
-  --nav-h: 68px;
+  --nav-h: 56px;
   --nav-total: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
 }
 
@@ -301,7 +301,9 @@ mark.search-hit {
   border: 1px solid var(--rule);
   background: var(--surface);
   color: var(--ink);
-  transition: background-color 150ms var(--ease-calm), border-color 150ms var(--ease-calm);
+  transition: background-color 120ms var(--ease-calm), border-color 120ms var(--ease-calm), transform 90ms ease-out;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 .btn:hover {
   border-color: var(--gold);
@@ -410,15 +412,22 @@ mark.search-hit {
   body { background: white; color: black; }
 }
 
-/* Distraction-free reading: hide site chrome while keeping the exit control. */
-html[data-focus] header,
-html[data-focus] footer,
-html[data-focus] .reader-secondary {
+/* Focus mode (reader): only the Scripture text and its book/chapter heading.
+   The exit control (.focus-exit) stays. */
+html[data-focus] .site-header,
+html[data-focus] .site-footer,
+html[data-focus] .bottom-nav,
+html[data-focus] .reader-toolbar,
+html[data-focus] .reader-secondary,
+html[data-focus] .reader-actions,
+html[data-focus] .nav-progress {
   display: none !important;
 }
-
-html[data-focus] .bottom-nav {
-  display: none !important;
+html[data-focus] body {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 2rem);
+}
+html[data-focus] main > section {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 3.5rem);
 }
 
 /* Horizontal scrollers without a visible scrollbar (still touch/keyboard scrollable). */
@@ -427,4 +436,107 @@ html[data-focus] .bottom-nav {
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* ---- Press feedback -------------------------------------------------------
+   Immediate response on touch/click: a slight press-in plus a color change.
+   The color change remains when reduced motion is requested; the movement
+   does not. */
+.pressable,
+.tab-link {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: transform 90ms ease-out, background-color 120ms ease-out, border-color 120ms ease-out, color 120ms ease-out;
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+  background: color-mix(in srgb, var(--gold-soft) 70%, var(--surface));
+  border-color: var(--gold);
+}
+.btn-primary:active:not(:disabled) {
+  background: color-mix(in srgb, var(--gold) 80%, var(--ink));
+}
+.btn-ghost:active:not(:disabled) {
+  background: color-mix(in srgb, var(--gold-soft) 60%, transparent);
+  border-color: transparent;
+}
+.pressable:active {
+  transform: scale(0.98);
+  border-color: var(--gold);
+}
+.tab-link:active .tab-pill {
+  transform: scale(0.92);
+  background: var(--gold-soft);
+}
+.tab-pill {
+  transition: transform 90ms ease-out, background-color 120ms ease-out;
+}
+/* Pending tab: the pill fills in while the next page loads. */
+.tab-pill[data-pending] {
+  animation: tab-pending 900ms ease-in-out infinite;
+}
+@keyframes tab-pending {
+  50% { background: color-mix(in srgb, var(--gold-soft) 55%, var(--surface)); }
+}
+
+/* Busy buttons (set aria-busy while an action runs): a small spinner, no
+   repeat presses. */
+.btn[aria-busy="true"] {
+  pointer-events: none;
+}
+.btn[aria-busy="true"]::before {
+  content: "";
+  width: 0.9em;
+  height: 0.9em;
+  flex: none;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 650ms linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Loading placeholders. */
+.skeleton {
+  background: color-mix(in srgb, var(--rule) 75%, transparent);
+  animation: skeleton-pulse 1.1s ease-in-out infinite;
+}
+@keyframes skeleton-pulse {
+  50% { opacity: 0.55; }
+}
+
+/* Thin top progress bar for page navigation (see NavProgress). */
+.nav-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 2px;
+  z-index: 60;
+  pointer-events: none;
+  background: var(--gold);
+  transform-origin: 0 50%;
+  animation: nav-progress 2.5s cubic-bezier(0.1, 0.7, 0.2, 1) forwards;
+}
+[dir="rtl"] .nav-progress { transform-origin: 100% 50%; }
+@keyframes nav-progress {
+  from { transform: scaleX(0.05); }
+  to { transform: scaleX(0.85); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn:active:not(:disabled),
+  .pressable:active,
+  .tab-link:active .tab-pill {
+    transform: none;
+  }
+  .tab-pill[data-pending],
+  .skeleton {
+    animation: none;
+  }
+  /* Static indicators instead of motion. */
+  .nav-progress {
+    animation: none;
+    transform: scaleX(0.6);
+  }
 }

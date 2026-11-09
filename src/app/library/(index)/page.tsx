@@ -25,7 +25,15 @@ async function labelFor(edition: string, book: string, chapter: number, from: nu
 
 export default async function LibraryPage({ searchParams }: PageProps<"/library">) {
   const g = await gate("/library", "My Library");
-  if (!g.user) return g.panel;
+  if (!g.user)
+    return (
+      <>
+        {g.panel}
+        <div className="mx-auto -mt-2 max-w-xl px-4 pb-10">
+          <MoreLinks />
+        </div>
+      </>
+    );
   const sp = await searchParams;
   const tab: Tab = sp.tab === "highlights" || sp.tab === "notes" ? sp.tab : "bookmarks";
   const q = typeof sp.q === "string" ? sp.q.trim().toLowerCase().slice(0, 100) : "";
@@ -58,15 +66,15 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
         <h1 className="text-2xl font-bold tracking-tight">My Library</h1>
         <PrivateBadge />
       </div>
+      <div className="mt-4">
+        <MoreLinks />
+      </div>
       <nav aria-label="Library sections" className="mt-6 flex gap-2 border-b border-rule">
         {tabs.map((t) => (
           <Link key={t.id} href={`/library?tab=${t.id}`} aria-current={tab === t.id ? "page" : undefined} className={`-mb-px border-b-2 px-4 py-2 ${tab === t.id ? "border-gold font-semibold" : "border-transparent text-muted"}`}>
             {t.label}
           </Link>
         ))}
-        <Link href="/journal" className="ms-auto px-4 py-2 text-muted">
-          Prayer journal →
-        </Link>
       </nav>
       <form className="mt-4 flex flex-wrap gap-2" role="search">
         <input type="hidden" name="tab" value={tab} />
@@ -114,5 +122,31 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
         </ul>
       )}
     </div>
+  );
+}
+
+/** Secondary sections that live under Library (not in the bottom bar). */
+function MoreLinks() {
+  const links = [
+    { href: "/journal", label: "Prayer Journal", hint: "Private prayers and reflections", d: "M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6V3ZM6 3v18M10 8h5M10 12h5" },
+    { href: "/discover", label: "Discover", hint: "Passages by theme", d: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM15.5 8.5l-2 5-5 2 2-5 5-2Z" },
+    { href: "/watch", label: "Watch", hint: "Films and teaching, official links", d: "M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1ZM10 9.5v5l4.5-2.5L10 9.5Z" },
+  ];
+  return (
+    <nav aria-label="More in Library" className="grid gap-2 sm:grid-cols-3">
+      {links.map((l) => (
+        <Link key={l.href} href={l.href} className="pressable card flex items-center gap-3 px-4 py-3 hover:border-gold">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold-soft text-gold">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d={l.d} />
+            </svg>
+          </span>
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold">{l.label}</span>
+            <span className="block truncate text-xs text-muted">{l.hint}</span>
+          </span>
+        </Link>
+      ))}
+    </nav>
   );
 }

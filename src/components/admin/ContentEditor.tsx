@@ -22,12 +22,12 @@ export function ContentEditor({ kind, initial, id, status }: { kind: Kind; initi
       <label className="sr-only" htmlFor={`ed-${kind}-${id ?? "new"}`}>JSON</label>
       <textarea id={`ed-${kind}-${id ?? "new"}`} className="input min-h-40 font-mono text-xs" value={json} onChange={(e) => setJson(e.target.value)} spellCheck={false} />
       <div className="flex flex-wrap items-center gap-2">
-        <button className="btn btn-sm" disabled={pending} onClick={() => save("draft")}>Save draft</button>
-        <button className="btn btn-sm btn-primary" disabled={pending} onClick={() => save("published")}>Publish</button>
+        <button className="btn btn-sm" disabled={pending} aria-busy={pending} onClick={() => save("draft")}>Save draft</button>
+        <button className="btn btn-sm btn-primary" disabled={pending} aria-busy={pending} onClick={() => save("published")}>Publish</button>
         {id && (
           <button
             className="btn btn-sm btn-danger"
-            disabled={pending}
+            disabled={pending} aria-busy={pending}
             onClick={() => confirm(`Delete ${id}? Seed content (if any) will show again.`) && start(async () => { const r = await deleteContent(kind, id); if (r.ok) router.refresh(); else setMsg({ ok: false, text: r.error }); })}
           >
             Delete override

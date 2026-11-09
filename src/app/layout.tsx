@@ -8,6 +8,8 @@ import "./globals.css";
 import { site } from "@/config/site";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { Suspense } from "react";
+import { NavProgress } from "@/components/NavProgress";
 import { BottomNav } from "@/components/BottomNav";
 import { getDictionary, getPrefs } from "@/lib/request";
 
@@ -39,6 +41,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         </main>
         <SiteFooter />
         <BottomNav t={t.tabs} />
+        <Suspense fallback={null}>
+          <NavProgress />
+        </Suspense>
       </body>
     </html>
   );

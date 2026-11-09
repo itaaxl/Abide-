@@ -134,12 +134,12 @@ export function EntryEditor({ userId, initial, today }: { userId: string; initia
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <button className="btn btn-primary" disabled={pending}>Save privately</button>
+        <button className="btn btn-primary" disabled={pending} aria-busy={pending}>Save privately</button>
         {initial && (
           <button
             type="button"
             className="btn btn-danger"
-            disabled={pending}
+            disabled={pending} aria-busy={pending}
             onClick={() =>
               confirm("Delete this entry permanently?") &&
               start(async () => {

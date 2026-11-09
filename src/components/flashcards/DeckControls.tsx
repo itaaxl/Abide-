@@ -45,7 +45,7 @@ export function NewDeckForm() {
         <label htmlFor="deckname" className="label">New deck</label>
         <input id="deckname" className="input" maxLength={80} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Psalms of comfort" required />
       </div>
-      <button className="btn" disabled={pending}>Create</button>
+      <button className="btn" disabled={pending} aria-busy={pending}>Create</button>
       <div className="w-full"><Msg /></div>
     </form>
   );
@@ -60,7 +60,7 @@ export function DailyTargetForm({ value }: { value: number }) {
         <label htmlFor="target" className="label">Daily review goal</label>
         <input id="target" type="number" min={1} max={200} className="input w-28" value={v} onChange={(e) => setV(Number(e.target.value))} />
       </div>
-      <button className="btn" disabled={pending}>Save</button>
+      <button className="btn" disabled={pending} aria-busy={pending}>Save</button>
       <Msg />
     </form>
   );
@@ -78,13 +78,13 @@ export function DeckSettings({ id, name, description }: { id: string; name: stri
         <input id="dn" className="input" value={n} maxLength={80} onChange={(e) => setN(e.target.value)} />
         <label htmlFor="dd" className="label">Description</label>
         <input id="dd" className="input" value={d} maxLength={500} onChange={(e) => setD(e.target.value)} />
-        <button className="btn w-fit" disabled={pending}>Save deck</button>
+        <button className="btn w-fit" disabled={pending} aria-busy={pending}>Save deck</button>
       </form>
       <div className="flex flex-wrap gap-2">
-        <button className="btn btn-sm" disabled={pending} onClick={() => confirm("Reset progress for every card in this deck? Review history for these cards will be removed. Cards stay in the deck.") && run(() => resetDeck(id), "Progress reset")}>
+        <button className="btn btn-sm" disabled={pending} aria-busy={pending} onClick={() => confirm("Reset progress for every card in this deck? Review history for these cards will be removed. Cards stay in the deck.") && run(() => resetDeck(id), "Progress reset")}>
           Reset progress
         </button>
-        <button className="btn btn-sm btn-danger" disabled={pending} onClick={() => confirm("Delete this deck and all its cards? This cannot be undone.") && run(() => deleteDeck(id), undefined, () => router.push("/flashcards"))}>
+        <button className="btn btn-sm btn-danger" disabled={pending} aria-busy={pending} onClick={() => confirm("Delete this deck and all its cards? This cannot be undone.") && run(() => deleteDeck(id), undefined, () => router.push("/flashcards"))}>
           Delete deck
         </button>
       </div>
@@ -104,7 +104,7 @@ export function CustomCardForm({ deckId }: { deckId: string }) {
       <textarea id="cf" className="input" maxLength={1000} value={front} onChange={(e) => setFront(e.target.value)} required />
       <label htmlFor="cb" className="label">Answer</label>
       <textarea id="cb" className="input" maxLength={2000} value={back} onChange={(e) => setBack(e.target.value)} required />
-      <button className="btn w-fit" disabled={pending}>Add card</button>
+      <button className="btn w-fit" disabled={pending} aria-busy={pending}>Add card</button>
       <Msg />
     </form>
   );
@@ -119,7 +119,7 @@ export function CardRowControls({ id, scripture, editions }: { id: string; scrip
           aria-label="Copy this card into another translation"
           className="input w-auto py-1 text-sm"
           defaultValue=""
-          disabled={pending}
+          disabled={pending} aria-busy={pending}
           onChange={(e) => {
             const v = e.target.value;
             e.target.value = "";
@@ -130,7 +130,7 @@ export function CardRowControls({ id, scripture, editions }: { id: string; scrip
           {editions.map((e) => <option key={e.id} value={e.id}>{e.abbr}</option>)}
         </select>
       )}
-      <button className="btn btn-sm btn-ghost btn-danger" disabled={pending} onClick={() => confirm("Delete this card?") && run(() => deleteCard(id))}>
+      <button className="btn btn-sm btn-ghost btn-danger" disabled={pending} aria-busy={pending} onClick={() => confirm("Delete this card?") && run(() => deleteCard(id))}>
         Delete
       </button>
       <Msg />

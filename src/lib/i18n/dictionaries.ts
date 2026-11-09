@@ -24,7 +24,7 @@ const en = {
   },
   tabs: {
     bible: "Bible",
-    flashcards: "Verses",
+    flashcards: "Flashcards",
     guidance: "Guidance",
     plans: "Plans",
     watch: "Watch",
@@ -36,7 +36,7 @@ const en = {
     primary: "Main sections",
   },
   cards: {
-    title: "Verses",
+    title: "Flashcards",
     verses: "Verses",
     saved: "Saved",
     today: "Today",
@@ -194,7 +194,7 @@ const fr: Dictionary = {
   },
   tabs: {
     bible: "Bible",
-    flashcards: "Versets",
+    flashcards: "Cartes",
     guidance: "Conseils",
     plans: "Plans",
     watch: "Regarder",
@@ -206,7 +206,7 @@ const fr: Dictionary = {
     primary: "Sections principales",
   },
   cards: {
-    title: "Versets",
+    title: "Cartes",
     verses: "Versets",
     saved: "Enregistrés",
     today: "Aujourd’hui",
@@ -362,7 +362,7 @@ const ar: Dictionary = {
   },
   tabs: {
     bible: "الكتاب",
-    flashcards: "آيات",
+    flashcards: "بطاقات",
     guidance: "إرشاد",
     plans: "خطط",
     watch: "شاهد",
@@ -374,7 +374,7 @@ const ar: Dictionary = {
     primary: "الأقسام الرئيسية",
   },
   cards: {
-    title: "آيات",
+    title: "بطاقات",
     verses: "آيات",
     saved: "المحفوظة",
     today: "اليوم",

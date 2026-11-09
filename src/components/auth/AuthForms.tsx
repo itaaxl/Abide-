@@ -160,7 +160,7 @@ export function SignUpForm() {
         </label>
         {state.fieldErrors?.terms && <p className="mt-1 text-sm text-danger">{state.fieldErrors.terms}</p>}
       </div>
-      <button className="btn btn-primary w-full" disabled={pending}>
+      <button className="btn btn-primary w-full" disabled={pending} aria-busy={pending}>
         {pending ? "Creating account…" : "Create account"}
       </button>
     </form>
@@ -210,7 +210,7 @@ export function CodeForm({ email, purpose, next = "/" }: { email: string; purpos
           Codes expire after {OTP_EXPIRY_MINUTES} minutes and work once. Only the newest code is valid.
         </p>
       </div>
-      <button className="btn btn-primary w-full" disabled={pending}>
+      <button className="btn btn-primary w-full" disabled={pending} aria-busy={pending}>
         {pending ? "Checking…" : purpose === "recovery" ? "Continue to new password" : purpose === "signup" ? "Continue" : "Sign in"}
       </button>
     </form>
@@ -261,7 +261,7 @@ function CodeSignIn({ next }: { next: string }) {
         ) : (
           <Field label="Email" name="email" type="email" autoComplete="email" defaultValue={state.email} />
         )}
-        <button className={`btn w-full ${sent ? "" : "btn-primary"}`} disabled={pending || cooldown > 0}>
+        <button className={`btn w-full ${sent ? "" : "btn-primary"}`} disabled={pending || cooldown > 0} aria-busy={pending}>
           {pending ? "Sending…" : cooldown > 0 ? `Send a new code in ${cooldown}s` : sent ? "Send a new code" : "Email me a sign-in code"}
         </button>
       </form>
@@ -287,7 +287,7 @@ function PasswordSignIn({ next }: { next: string }) {
         <input type="hidden" name="next" value={next} />
         <Field label="Email" name="email" type="email" autoComplete="email" defaultValue={state.email} />
         <PasswordField label="Password" name="password" autoComplete="current-password" />
-        <button className="btn btn-primary w-full" disabled={pending}>
+        <button className="btn btn-primary w-full" disabled={pending} aria-busy={pending}>
           {pending ? "Signing in…" : "Sign in"}
         </button>
       </form>
@@ -313,7 +313,7 @@ export function ResendForm({ email, initialCooldown = 0 }: { email: string; init
     <form action={action} className="space-y-2">
       <Status state={state} />
       <input type="hidden" name="email" value={email} />
-      <button className="btn w-full" disabled={pending || cooldown > 0}>
+      <button className="btn w-full" disabled={pending || cooldown > 0} aria-busy={pending}>
         {pending ? "Sending…" : cooldown > 0 ? `Resend available in ${cooldown}s` : "Resend verification email"}
       </button>
     </form>
@@ -334,7 +334,7 @@ export function ForgotForm() {
       <form action={action} className="space-y-4" noValidate>
         <Status state={state} />
         {sent ? <input type="hidden" name="email" value={state.email} /> : <Field label="Email" name="email" type="email" autoComplete="email" defaultValue={state.email} />}
-        <button className={`btn w-full ${sent ? "" : "btn-primary"}`} disabled={pending || cooldown > 0}>
+        <button className={`btn w-full ${sent ? "" : "btn-primary"}`} disabled={pending || cooldown > 0} aria-busy={pending}>
           {pending ? "Sending…" : cooldown > 0 ? `Send again in ${cooldown}s` : sent ? "Send a new reset email" : "Send reset email"}
         </button>
       </form>
@@ -355,7 +355,7 @@ export function ResetForm() {
       <Status state={state} />
       <PasswordField label="New password" name="password" showRules autoComplete="new-password" error={state.fieldErrors?.password} />
       <PasswordField label="Confirm new password" name="confirm" autoComplete="new-password" error={state.fieldErrors?.confirm} />
-      <button className="btn btn-primary w-full" disabled={pending}>
+      <button className="btn btn-primary w-full" disabled={pending} aria-busy={pending}>
         Update password
       </button>
     </form>

@@ -376,7 +376,7 @@ export function Reader(props: ReaderProps) {
         <div
           role="region"
           aria-label={refLabel}
-          className="no-print fixed inset-x-0 bottom-[var(--nav-total)] z-30 border-t border-rule bg-surface/97 shadow-[0_-4px_20px_rgb(0_0_0/0.06)] lg:bottom-[calc(var(--nav-h)+1.5rem)] lg:mx-auto lg:max-w-3xl lg:rounded-2xl lg:border"
+          className="reader-actions no-print fixed inset-x-0 bottom-[var(--nav-total)] z-30 border-t border-rule bg-surface/97 shadow-[0_-4px_20px_rgb(0_0_0/0.06)] lg:bottom-[calc(var(--nav-h)+1.5rem)] lg:mx-auto lg:max-w-3xl lg:rounded-2xl lg:border"
         >
           <div className="mx-auto max-w-3xl px-4 py-3">
             <div className="mb-2 flex items-center justify-between gap-2">
@@ -392,7 +392,7 @@ export function Reader(props: ReaderProps) {
               <button className="btn btn-sm" onClick={onShare}>{t.share}</button>
               {props.canSave && annotations ? (
                 <>
-                  <button className="btn btn-sm" onClick={onBookmark} aria-pressed={Boolean(bookmarkFor(range))} disabled={pending}>
+                  <button className="btn btn-sm" onClick={onBookmark} aria-pressed={Boolean(bookmarkFor(range))} disabled={pending} aria-busy={pending}>
                     {bookmarkFor(range) ? `★ ${t.bookmarked}` : `☆ ${t.bookmark}`}
                   </button>
                   <div role="group" aria-label={t.highlight} className="flex items-center gap-1">
@@ -410,7 +410,7 @@ export function Reader(props: ReaderProps) {
                     </button>
                   </div>
                   <button className="btn btn-sm" onClick={() => setNoteDraft(existingNote?.body ?? "")}>✎ {t.note}</button>
-                  <button className="btn btn-sm" onClick={onFlashcard} disabled={pending}>{t.flashcard}</button>
+                  <button className="btn btn-sm" onClick={onFlashcard} disabled={pending} aria-busy={pending}>{t.flashcard}</button>
                 </>
               ) : (
                 props.savingHint && (
@@ -433,11 +433,11 @@ export function Reader(props: ReaderProps) {
                   onChange={(e) => setNoteDraft(e.target.value)}
                 />
                 <div className="mt-2 flex items-center gap-2">
-                  <button className="btn btn-sm btn-primary" onClick={onSaveNote} disabled={pending || !noteDraft.trim()}>
+                  <button className="btn btn-sm btn-primary" onClick={onSaveNote} disabled={pending || !noteDraft.trim()} aria-busy={pending}>
                     Save
                   </button>
                   {existingNote && (
-                    <button className="btn btn-sm btn-danger" onClick={onDeleteNote} disabled={pending}>
+                    <button className="btn btn-sm btn-danger" onClick={onDeleteNote} disabled={pending} aria-busy={pending}>
                       Delete
                     </button>
                   )}

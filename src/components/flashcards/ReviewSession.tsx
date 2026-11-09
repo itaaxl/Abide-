@@ -116,7 +116,7 @@ export function ReviewSession({ cards, practice, timezone, target, reviewedToday
       ) : (
         <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4" role="group" aria-label="How well did you remember?">
           {RATINGS.map((r, i) => (
-            <button key={r} className="btn flex-col py-2" disabled={pending} onClick={() => rate(r)}>
+            <button key={r} className="btn flex-col py-2" disabled={pending} aria-busy={pending} onClick={() => rate(r)}>
               <span>{LABELS[r]}</span>
               <span className="text-xs text-muted">{practice ? `key ${i + 1}` : `${preview(r)} · ${i + 1}`}</span>
             </button>

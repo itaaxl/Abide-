@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { updatePrefs } from "@/app/actions/prefs";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import type { Prefs } from "@/lib/prefs";
@@ -34,26 +34,35 @@ export function ReaderToolbar({ editions, edition, groups, book, chapter, prefs,
   const [selBook, setSelBook] = useState(book);
   const [selChapter, setSelChapter] = useState(chapter);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [focus, setFocus] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  const [, startTransition] = useTransition();
+  const [local, setLocal] = useState(prefs);
+  const [navigating, startNav] = useTransition();
+  const [, startSave] = useTransition();
+  const pendingPatch = useRef<Partial<Prefs>>({});
+  const saveTimer = useRef<number | null>(null);
   const id = useId();
 
   const allBooks = groups.flatMap((g) => g.books);
   const chapters = allBooks.find((b) => b.id === selBook)?.chapters ?? 1;
 
-  useEffect(() => {
-    document.documentElement.toggleAttribute("data-focus", focus);
-    return () => document.documentElement.removeAttribute("data-focus");
-  }, [focus]);
+  // Flush any unsaved preference change when leaving the page.
+  useEffect(
+    () => () => {
+      if (saveTimer.current) {
+        window.clearTimeout(saveTimer.current);
+        void updatePrefs(pendingPatch.current);
+      }
+    },
+    [],
+  );
 
   function go(b: string, c: number) {
-    router.push(`/bible/${edition}/${b}/${c}`);
+    startNav(() => router.push(`/bible/${edition}/${b}/${c}`));
   }
 
   function changeEdition(next: string) {
     const available = bookAvailability[next] ?? [];
-    startTransition(async () => {
+    startNav(async () => {
       await updatePrefs({ edition: next });
       if (available.includes(book)) router.push(`/bible/${next}/${book}/${chapter}`);
       else {
@@ -63,25 +72,38 @@ export function ReaderToolbar({ editions, edition, groups, book, chapter, prefs,
     });
   }
 
+  /**
+   * Apply a reading preference immediately on screen, then save it once the
+   * user pauses (one request instead of one per slider step). Theme, size and
+   * spacing need no server round trip to display; layout options re-render.
+   */
   function setPref(patch: Partial<Prefs>) {
-    startTransition(async () => {
-      await updatePrefs(patch);
-      router.refresh();
-    });
-  }
-
-  if (focus) {
-    return (
-      <div className="no-print fixed end-3 top-3 z-50">
-        <button className="btn btn-sm shadow" onClick={() => setFocus(false)} autoFocus>
-          {t.exitFocus}
-        </button>
-      </div>
+    setLocal((p) => ({ ...p, ...patch }));
+    const root = document.documentElement;
+    if (patch.theme) root.setAttribute("data-theme", patch.theme);
+    for (const el of document.querySelectorAll<HTMLElement>("article.scripture")) {
+      if (patch.fontSize) el.style.setProperty("--reader-size", `${patch.fontSize}px`);
+      if (patch.lineHeight) el.style.setProperty("--reader-leading", String(patch.lineHeight));
+    }
+    pendingPatch.current = { ...pendingPatch.current, ...patch };
+    const needsRender = ["width", "layout", "showNotes", "showVerseNumbers"].some((k) => k in patch);
+    if (saveTimer.current) window.clearTimeout(saveTimer.current);
+    saveTimer.current = window.setTimeout(
+      () => {
+        saveTimer.current = null;
+        const toSave = pendingPatch.current;
+        pendingPatch.current = {};
+        // Saving sets the preferences cookie; Next.js re-renders the page with it.
+        startSave(async () => {
+          await updatePrefs(toSave);
+        });
+      },
+      needsRender ? 0 : 400,
     );
   }
 
   return (
-    <div className="no-print mb-6 rounded-2xl border border-rule bg-surface/70 p-3">
+    <div className="reader-toolbar no-print mb-6 rounded-2xl border border-rule bg-surface/70 p-3">
       <div className="flex flex-wrap items-end gap-2 sm:gap-3">
         <div className="min-w-0 flex-1 sm:min-w-[11rem]">
           <label htmlFor={`${id}-ed`} className="label sr-only sm:not-sr-only">
@@ -98,9 +120,6 @@ export function ReaderToolbar({ editions, edition, groups, book, chapter, prefs,
         <div className="flex gap-2 sm:order-last">
           <button className="btn" aria-expanded={settingsOpen} aria-controls={`${id}-settings`} onClick={() => setSettingsOpen((o) => !o)}>
             <span aria-hidden="true">Aa</span> <span className="sr-only sm:not-sr-only">{t.settings}</span>
-          </button>
-          <button className="btn" onClick={() => setFocus(true)} title={t.focus}>
-            <span aria-hidden="true">⤢</span> <span className="sr-only sm:not-sr-only">{t.focus}</span>
           </button>
         </div>
         <form
@@ -147,7 +166,7 @@ export function ReaderToolbar({ editions, edition, groups, book, chapter, prefs,
               ))}
             </select>
           </div>
-          <button className="btn btn-primary">{t.go}</button>
+          <button className="btn btn-primary" aria-busy={navigating} disabled={navigating}>{t.go}</button>
         </form>
       </div>
       <details className="mt-2 hidden text-xs text-muted sm:block">
@@ -167,7 +186,7 @@ export function ReaderToolbar({ editions, edition, groups, book, chapter, prefs,
             <legend className="label">{t.theme}</legend>
             <div className="flex gap-2">
               {(["light", "sepia", "dark"] as const).map((th) => (
-                <button key={th} className={`btn btn-sm ${prefs.theme === th ? "btn-primary" : ""}`} aria-pressed={prefs.theme === th} onClick={() => setPref({ theme: th })}>
+                <button key={th} className={`btn btn-sm ${local.theme === th ? "btn-primary" : ""}`} aria-pressed={local.theme === th} onClick={() => setPref({ theme: th })}>
                   {t[th]}
                 </button>
               ))}
@@ -175,13 +194,13 @@ export function ReaderToolbar({ editions, edition, groups, book, chapter, prefs,
           </fieldset>
           <div>
             <label htmlFor={`${id}-fs`} className="label">
-              {t.fontSize}: {prefs.fontSize}px
+              {t.fontSize}: {local.fontSize}px
             </label>
             <input id={`${id}-fs`} type="range" min={14} max={30} step={1} defaultValue={prefs.fontSize} className="w-full accent-[var(--gold)]" onChange={(e) => setPref({ fontSize: Number(e.target.value) })} />
           </div>
           <div>
             <label htmlFor={`${id}-lh`} className="label">
-              {t.lineHeight}: {prefs.lineHeight.toFixed(2)}
+              {t.lineHeight}: {local.lineHeight.toFixed(2)}
             </label>
             <input id={`${id}-lh`} type="range" min={1.4} max={2.2} step={0.05} defaultValue={prefs.lineHeight} className="w-full accent-[var(--gold)]" onChange={(e) => setPref({ lineHeight: Number(e.target.value) })} />
           </div>
@@ -189,7 +208,7 @@ export function ReaderToolbar({ editions, edition, groups, book, chapter, prefs,
             <legend className="label">{t.width}</legend>
             <div className="flex gap-2">
               {(["narrow", "medium", "wide"] as const).map((w) => (
-                <button key={w} className={`btn btn-sm ${prefs.width === w ? "btn-primary" : ""}`} aria-pressed={prefs.width === w} onClick={() => setPref({ width: w })}>
+                <button key={w} className={`btn btn-sm ${local.width === w ? "btn-primary" : ""}`} aria-pressed={local.width === w} onClick={() => setPref({ width: w })}>
                   {t[w]}
                 </button>
               ))}
@@ -198,21 +217,21 @@ export function ReaderToolbar({ editions, edition, groups, book, chapter, prefs,
           <fieldset>
             <legend className="label">{t.layout}</legend>
             <div className="flex gap-2">
-              <button className={`btn btn-sm ${prefs.layout === "paragraph" ? "btn-primary" : ""}`} aria-pressed={prefs.layout === "paragraph"} onClick={() => setPref({ layout: "paragraph" })}>
+              <button className={`btn btn-sm ${local.layout === "paragraph" ? "btn-primary" : ""}`} aria-pressed={local.layout === "paragraph"} onClick={() => setPref({ layout: "paragraph" })}>
                 {t.paragraph}
               </button>
-              <button className={`btn btn-sm ${prefs.layout === "verse" ? "btn-primary" : ""}`} aria-pressed={prefs.layout === "verse"} onClick={() => setPref({ layout: "verse" })}>
+              <button className={`btn btn-sm ${local.layout === "verse" ? "btn-primary" : ""}`} aria-pressed={local.layout === "verse"} onClick={() => setPref({ layout: "verse" })}>
                 {t.versePerLine}
               </button>
             </div>
           </fieldset>
           <fieldset className="space-y-2">
             <label className="flex items-center gap-2">
-              <input type="checkbox" checked={prefs.showNotes} onChange={(e) => setPref({ showNotes: e.target.checked })} className="h-5 w-5" />
+              <input type="checkbox" checked={local.showNotes} onChange={(e) => setPref({ showNotes: e.target.checked })} className="h-5 w-5" />
               {t.notes}
             </label>
             <label className="flex items-center gap-2">
-              <input type="checkbox" checked={prefs.showVerseNumbers} onChange={(e) => setPref({ showVerseNumbers: e.target.checked })} className="h-5 w-5" />
+              <input type="checkbox" checked={local.showVerseNumbers} onChange={(e) => setPref({ showVerseNumbers: e.target.checked })} className="h-5 w-5" />
               {t.verseNumbers}
             </label>
           </fieldset>

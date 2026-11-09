@@ -9,6 +9,7 @@ import { getChapterAnnotations } from "@/lib/user-data";
 import { Reader } from "./Reader";
 import { ReaderToolbar } from "./ReaderToolbar";
 import { ParallelColumn } from "./ParallelColumn";
+import { FocusMode } from "./FocusMode";
 
 interface Props {
   edition: EditionMeta;
@@ -66,6 +67,7 @@ export async function ReaderView({ edition, book, chapter, target = null, parall
   return (
     <section className={`mx-auto px-4 pb-40 pt-6 ${parallelEdition ? "max-w-6xl" : "max-w-4xl"}`} aria-labelledby="chapter-heading">
       <ReaderToolbar
+        key={`${edition.id}-${book}-${chapter}`}
         editions={toolbarEditions}
         edition={edition.id}
         groups={groups}
@@ -76,17 +78,20 @@ export async function ReaderView({ edition, book, chapter, target = null, parall
         bookAvailability={bookAvailability}
       />
 
-      <header className="mb-8 text-center">
-        <p className="eyebrow">{edition.name}</p>
+      <header className="relative mb-8 text-center">
+        <div className="mb-3 flex justify-end">
+          <FocusMode label={t.reader.focus} exitLabel={t.reader.exitFocus} />
+        </div>
+        <p className="eyebrow reader-secondary">{edition.name}</p>
         <H id="chapter-heading" className="mt-1 font-serif text-3xl font-medium tracking-tight sm:text-[2.4rem]" dir={edition.direction}>
           {bookMeta.name} <span className="text-gold">{chapter}</span>
         </H>
         {chapter === 1 && bookMeta.longName !== bookMeta.name && (
-          <p className="mt-2 font-serif italic text-muted" dir={edition.direction}>
+          <p className="reader-secondary mt-2 font-serif italic text-muted" dir={edition.direction}>
             {bookMeta.longName}
           </p>
         )}
-        <div className="rule-ornament mx-auto mt-5 max-w-xs" aria-hidden="true">
+        <div className="rule-ornament reader-secondary mx-auto mt-5 max-w-xs" aria-hidden="true">
           ✦
         </div>
       </header>
@@ -118,7 +123,7 @@ export async function ReaderView({ edition, book, chapter, target = null, parall
 
       <nav aria-label="Chapter navigation" className="reader-secondary mx-auto mt-12 flex max-w-2xl items-center justify-between gap-3 border-t border-rule pt-6">
         {prev ? (
-          <Link rel="prev" href={`/bible/${edition.id}/${prev.book}/${prev.chapter}`} className="btn">
+          <Link prefetch rel="prev" href={`/bible/${edition.id}/${prev.book}/${prev.chapter}`} className="btn">
             <span aria-hidden="true">{edition.direction === "rtl" ? "→" : "←"}</span>
             <span>
               <span className="sr-only">{t.reader.prevChapter}: </span>
@@ -130,7 +135,7 @@ export async function ReaderView({ edition, book, chapter, target = null, parall
         )}
         <ParallelPicker editions={editions.filter((e) => e.id !== edition.id)} current={parallel} base={`/bible/${edition.id}/${book}/${chapter}`} label={t.reader.parallel} />
         {next ? (
-          <Link rel="next" href={`/bible/${edition.id}/${next.book}/${next.chapter}`} className="btn">
+          <Link prefetch rel="next" href={`/bible/${edition.id}/${next.book}/${next.chapter}`} className="btn">
             <span>
               <span className="sr-only">{t.reader.nextChapter}: </span>
               {next.bookName} {next.chapter}

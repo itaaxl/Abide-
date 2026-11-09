@@ -11,7 +11,7 @@ export async function SiteHeader() {
   const user = await getSessionUser();
   const initial = (user?.displayName || user?.email || "?").trim().charAt(0).toUpperCase();
   return (
-    <header className="no-print sticky top-0 z-40 border-b border-rule bg-paper/90 backdrop-blur supports-[backdrop-filter]:bg-paper/80">
+    <header className="site-header no-print sticky top-0 z-40 border-b border-rule bg-paper/90 backdrop-blur supports-[backdrop-filter]:bg-paper/80">
       <a href="#main" className="sr-only-focusable btn btn-sm absolute start-2 top-2 z-50">
         {t.nav.skip}
       </a>

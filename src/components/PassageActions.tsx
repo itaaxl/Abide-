@@ -53,7 +53,7 @@ export function PassageActions(p: PassageActionProps) {
           <>
             <button
               className="btn btn-sm"
-              disabled={pending}
+              disabled={pending} aria-busy={pending}
               onClick={() =>
                 start(async () => {
                   const r = await toggleBookmark(passage);
@@ -65,7 +65,7 @@ export function PassageActions(p: PassageActionProps) {
             </button>
             <button
               className="btn btn-sm"
-              disabled={pending}
+              disabled={pending} aria-busy={pending}
               onClick={() =>
                 start(async () => {
                   const r = await addPassageCard(passage);

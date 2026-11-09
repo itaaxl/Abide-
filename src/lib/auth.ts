@@ -11,28 +11,46 @@ export interface SessionUser {
 }
 
 /**
- * The current user, verified with the auth server (getUser), or null.
- * Cached per request.
+ * The current user, or null. Cached per request.
+ *
+ * Uses getClaims(): the access token's signature is verified locally against
+ * the project's published signing key (ES256), so ordinary page loads need no
+ * round trip to the auth server. The proxy refreshes expired tokens before
+ * the page renders. Email confirmation is required on this project, so a
+ * session only exists for confirmed accounts; the token's email_verified flag
+ * is still checked, with a server lookup in the rare case it is absent.
+ * Sensitive operations (admin, account deletion) use getVerifiedUser().
  */
 export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   const supabase = await createClient();
   if (!supabase) return null;
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) return null;
-  const u = data.user;
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name, role")
-    .eq("id", u.id)
-    .maybeSingle();
+  const { data, error } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  if (error || !claims?.sub) return null;
+  const meta = (claims.user_metadata ?? {}) as { email_verified?: boolean };
+  const [verified, { data: profile }] = await Promise.all([
+    meta.email_verified === true ? Promise.resolve(true) : supabase.auth.getUser().then((r) => Boolean(r.data.user?.email_confirmed_at)),
+    supabase.from("profiles").select("display_name, role").eq("id", claims.sub).maybeSingle(),
+  ]);
   return {
-    id: u.id,
-    email: u.email ?? "",
-    emailVerified: Boolean(u.email_confirmed_at),
+    id: claims.sub,
+    email: typeof claims.email === "string" ? claims.email : "",
+    emailVerified: verified,
     displayName: profile?.display_name ?? null,
     isAdmin: profile?.role === "admin",
   };
 });
+
+/** Like getSessionUser, but confirmed with the auth server (detects revoked sessions). */
+export async function getVerifiedUser(): Promise<SessionUser | null> {
+  const supabase = await createClient();
+  if (!supabase) return null;
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user) return null;
+  const base = await getSessionUser();
+  if (!base || base.id !== data.user.id) return null;
+  return { ...base, emailVerified: Boolean(data.user.email_confirmed_at) };
+}
 
 export class AuthError extends Error {
   constructor(public code: "unconfigured" | "signed-out" | "unverified" | "forbidden") {
@@ -52,6 +70,7 @@ export async function requireVerifiedUser() {
 
 export async function requireAdmin() {
   const ctx = await requireVerifiedUser();
-  if (!ctx.user.isAdmin) throw new AuthError("forbidden");
+  const strict = await getVerifiedUser();
+  if (!strict?.isAdmin) throw new AuthError("forbidden");
   return ctx;
 }

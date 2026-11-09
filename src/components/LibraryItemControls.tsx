@@ -38,11 +38,11 @@ export function LibraryItemControls({ kind, id, tags = [] }: { kind: "bookmarks"
     <div className="mt-3 flex flex-wrap items-center gap-1">
       {kind === "bookmarks" &&
         SUGGESTED_TAGS.map((t) => (
-          <button key={t} className={`btn btn-sm ${current.includes(t) ? "btn-primary" : "btn-ghost"}`} aria-pressed={current.includes(t)} onClick={() => toggleTag(t)} disabled={pending}>
+          <button key={t} className={`btn btn-sm ${current.includes(t) ? "btn-primary" : "btn-ghost"}`} aria-pressed={current.includes(t)} onClick={() => toggleTag(t)} disabled={pending} aria-busy={pending}>
             {t}
           </button>
         ))}
-      <button className="btn btn-sm btn-ghost btn-danger ms-auto" onClick={remove} disabled={pending}>
+      <button className="btn btn-sm btn-ghost btn-danger ms-auto" onClick={remove} disabled={pending} aria-busy={pending}>
         Remove
       </button>
       {error && <p role="alert" className="w-full text-sm text-danger">{error}</p>}

@@ -146,18 +146,30 @@ await check("verse cards: real verse first, prev/next, keyboard, swipe", async (
   await c.close();
 });
 
-await check("bottom navigation: all sections, active state, never covers content", async () => {
+await check("bottom navigation: five tabs fit a small phone, active state, never covers content", async () => {
   const c = await browser.newContext(devices["iPhone SE"]);
   const p = await c.newPage();
   await p.goto(`${BASE}/flashcards`, { waitUntil: "networkidle" });
-  const nav = p.getByRole("navigation", { name: "Main" });
-  for (const name of ["Bible", "Verses", "Guidance", "Plans", "Watch", "Library", "Journal", "Discover"]) {
-    assert((await nav.getByRole("link", { name }).count()) === 1, `${name} missing`);
-  }
-  assert((await nav.getByRole("link", { name: "Verses" }).getAttribute("aria-current")) === "page", "active state missing");
+  const nav = p.getByRole("navigation", { name: "Main sections" });
+  const names = await nav.getByRole("link").allInnerTexts();
+  assert(JSON.stringify(names.map((n) => n.trim())) === JSON.stringify(["Bible", "Flashcards", "Guidance", "Plans", "Library"]), `tabs: ${names}`);
+  const fit = await p.evaluate(() => {
+    const ul = document.querySelector(".bottom-nav ul");
+    const links = [...ul.querySelectorAll("a")];
+    return {
+      scroll: ul.scrollWidth - ul.clientWidth,
+      minW: Math.min(...links.map((a) => a.getBoundingClientRect().width)),
+      minH: Math.min(...links.map((a) => a.getBoundingClientRect().height)),
+      clipped: links.some((a) => { const s = a.querySelector("span:last-child"); return s.scrollWidth > s.clientWidth + 1; }),
+    };
+  });
+  assert(fit.scroll <= 0, `nav scrolls by ${fit.scroll}px`);
+  assert(fit.minW >= 44 && fit.minH >= 44, `tap target ${fit.minW}x${fit.minH}`);
+  assert(!fit.clipped, "a tab label is truncated");
+  assert((await nav.getByRole("link", { name: "Flashcards" }).getAttribute("aria-current")) === "page", "active state missing");
   assert((await p.getByRole("button", { name: /^Menu$/ }).count()) === 0, "old Menu button still present");
   // Scroll to the very bottom: the last content must sit above the bar.
-  for (const path of ["/flashcards", "/bible/eng-web/PSA/117", "/plans", "/watch"]) {
+  for (const path of ["/flashcards", "/bible/eng-web/PSA/117", "/plans", "/library", "/watch"]) {
     await p.goto(`${BASE}${path}`, { waitUntil: "networkidle" });
     await p.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await p.waitForTimeout(150);
@@ -169,6 +181,68 @@ await check("bottom navigation: all sections, active state, never covers content
     });
     assert(lastBottom <= navTop + 1, `${path}: footer ends at ${lastBottom}, nav starts at ${navTop}`);
   }
+  await c.close();
+});
+
+await check("Library links to Journal, Discover and Watch", async () => {
+  await page.goto(`${BASE}/library`, { waitUntil: "networkidle" });
+  const more = page.getByRole("navigation", { name: "More in Library" });
+  for (const [name, href] of [["Prayer Journal", "/journal"], ["Discover", "/discover"], ["Watch", "/watch"]]) {
+    assert((await more.getByRole("link", { name: new RegExp(name) }).getAttribute("href")) === href, `${name} link`);
+  }
+  await page.goto(`${BASE}/watch`, { waitUntil: "networkidle" });
+  assert((await page.getByRole("navigation", { name: "Main sections" }).getByRole("link", { name: "Library" }).getAttribute("aria-current")) === "page", "Library not active on Watch");
+});
+
+await check("tab press shows the next page immediately (prefetched loading state)", async () => {
+  const c = await browser.newContext(devices["iPhone SE"]);
+  const p = await c.newPage();
+  await p.goto(`${BASE}/flashcards`, { waitUntil: "networkidle" });
+  await p.request.get(`${BASE}/plans`); // warm the server so this measures the app, not a cold start
+  await p.waitForTimeout(500); // allow viewport prefetch
+  const t0 = Date.now();
+  await p.getByRole("navigation", { name: "Main sections" }).getByRole("link", { name: "Plans" }).click();
+  await p.waitForFunction(() => location.pathname === "/plans" && (document.querySelector('[aria-busy="true"]') || document.querySelector("h1")?.textContent?.includes("Reading Plans")));
+  const ms = Date.now() - t0;
+  assert(ms < 400, `took ${ms}ms`);
+  await c.close();
+});
+
+await check("focus mode: hides chrome, keeps position, Back and Exit return", async () => {
+  const c = await browser.newContext(devices["Pixel 7"]);
+  const p = await c.newPage();
+  await p.goto(`${BASE}/bible/eng-web/PSA/119`, { waitUntil: "networkidle" });
+  const topVerse = () => p.evaluate(() => [...document.querySelectorAll("article.scripture [data-verse]")].find((e) => e.getBoundingClientRect().bottom > 64)?.getAttribute("data-verse"));
+  // Entering keeps the verse on screen (button pressed without scrolling to it).
+  await p.locator('[data-verse="20"]').first().evaluate((e) => e.scrollIntoView({ block: "start" }));
+  await p.evaluate(() => window.scrollBy(0, -10));
+  const before = await topVerse();
+  await p.getByRole("button", { name: "Focus mode" }).evaluate((b) => b.click());
+  await p.getByRole("button", { name: "Exit focus mode" }).waitFor();
+  const during = await topVerse();
+  assert(Math.abs(Number(during) - Number(before)) <= 1, `enter moved ${before} -> ${during}`);
+  const hidden = await p.evaluate(() => [".site-header", ".bottom-nav", ".site-footer", ".reader-toolbar"].every((s) => { const e = document.querySelector(s); return !e || getComputedStyle(e).display === "none"; }));
+  assert(hidden, "chrome still visible");
+  assert(await p.locator("article.scripture").isVisible(), "scripture hidden");
+  // Read further in focus mode, then leave with Android/browser Back.
+  await p.locator('[data-verse="60"]').first().evaluate((e) => e.scrollIntoView({ block: "start" }));
+  await p.evaluate(() => window.scrollBy(0, -10));
+  const reading = await topVerse();
+  assert(await p.getByRole("button", { name: "Exit focus mode" }).isVisible(), "exit control not visible mid-chapter");
+  await p.goBack();
+  await p.locator(".site-header").waitFor({ state: "visible" });
+  assert(p.url().endsWith("/bible/eng-web/PSA/119"), `left reader: ${p.url()}`);
+  const after = await topVerse();
+  assert(Math.abs(Number(after) - Number(reading)) <= 1, `exit moved ${reading} -> ${after}`);
+  assert((await p.evaluate(() => document.documentElement.dataset.theme)) === "light", "theme changed");
+  // Exit button (and Escape) also work.
+  await p.getByRole("button", { name: "Focus mode" }).click();
+  await p.getByRole("button", { name: "Exit focus mode" }).click();
+  await p.getByRole("button", { name: "Focus mode" }).waitFor();
+  await p.getByRole("button", { name: "Focus mode" }).click();
+  await p.keyboard.press("Escape");
+  await p.locator(".site-header").waitFor({ state: "visible" });
+  assert(p.url().endsWith("/bible/eng-web/PSA/119"), `url ${p.url()}`);
   await c.close();
 });
 

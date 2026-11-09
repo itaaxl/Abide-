@@ -66,7 +66,7 @@ export function SettingsForm({ defaults, editions, timezones }: Props) {
         <input id="dailyTarget" name="dailyTarget" type="number" min={1} max={200} className="input" defaultValue={defaults.dailyTarget} />
       </div>
       <div className="flex items-center gap-3 sm:col-span-2">
-        <button className="btn btn-primary" disabled={pending}>Save settings</button>
+        <button className="btn btn-primary" disabled={pending} aria-busy={pending}>Save settings</button>
         <p role="status" className={state.error ? "text-danger" : "text-success"}>{state.error ?? state.message}</p>
       </div>
     </form>
@@ -90,7 +90,7 @@ export function DeleteAccountForm() {
         <input id="del-confirm" name="confirm" required className="input" autoComplete="off" />
       </div>
       {state.error && <p role="alert" className="text-sm text-danger">{state.error}</p>}
-      <button className="btn btn-danger" disabled={pending}>Delete my account permanently</button>
+      <button className="btn btn-danger" disabled={pending} aria-busy={pending}>Delete my account permanently</button>
     </form>
   );
 }

@@ -109,7 +109,7 @@ export function GuidanceForm({ edition, maxChars, canUse, signInHref }: { editio
             </select>
           </div>
           {canUse ? (
-            <button className="btn btn-primary" disabled={pending || text.trim().length < 3}>
+            <button className="btn btn-primary" disabled={pending || text.trim().length < 3} aria-busy={pending}>
               {pending ? "Finding passages…" : "Find passages"}
             </button>
           ) : (
@@ -197,7 +197,7 @@ export function GuidanceForm({ edition, maxChars, canUse, signInHref }: { editio
             </p>
             {canUse && (
               <div className="flex items-center gap-3">
-                <button className="btn" onClick={save} disabled={pending}>Save this guidance (private)</button>
+                <button className="btn" onClick={save} disabled={pending} aria-busy={pending}>Save this guidance (private)</button>
                 {saved && <p role="status" className="text-sm text-success">{saved}</p>}
               </div>
             )}

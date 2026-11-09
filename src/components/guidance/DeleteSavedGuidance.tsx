@@ -10,7 +10,7 @@ export function DeleteSavedGuidance({ id }: { id: string }) {
   return (
     <button
       className="btn btn-sm btn-ghost btn-danger mt-3"
-      disabled={pending}
+      disabled={pending} aria-busy={pending}
       onClick={() =>
         confirm("Delete this saved guidance?") &&
         start(async () => {

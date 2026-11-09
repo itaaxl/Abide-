@@ -25,7 +25,7 @@ export async function gate(next: string, feature: string): Promise<{ user: Sessi
       panel: (
         <Panel title={feature}>
           <p>Sign in to use {feature.toLowerCase()}. Your data is private to your account.</p>
-          <div className="mt-4 flex gap-2">
+          <div className="mt-4 flex flex-wrap gap-2 [&>a]:whitespace-nowrap">
             <Link className="btn btn-primary" href={`/auth/sign-in?next=${encodeURIComponent(next)}`}>
               Sign in
             </Link>
@@ -54,8 +54,8 @@ export async function gate(next: string, feature: string): Promise<{ user: Sessi
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="mx-auto max-w-xl px-4 py-14">
-      <div className="card p-8">
+    <div className="mx-auto max-w-xl px-4 py-8 sm:py-14">
+      <div className="card p-6 sm:p-8">
         <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
         <div className="mt-3 text-muted">{children}</div>
       </div>
