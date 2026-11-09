@@ -5,6 +5,7 @@ import { gate, PrivateBadge } from "@/components/Gate";
 import { listEditions } from "@/lib/bible/provider";
 import { getPrefs } from "@/lib/request";
 import { createClient } from "@/lib/supabase/server";
+import { signOutAction } from "@/app/auth/actions";
 
 export const metadata: Metadata = { title: "Account settings", robots: { index: false } };
 
@@ -22,12 +23,17 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
   return (
     <div className="mx-auto max-w-3xl space-y-8 px-4 py-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-serif text-4xl">Account settings</h1>
-        <PrivateBadge />
+        <h1 className="text-2xl font-bold tracking-tight">Account settings</h1>
+        <div className="flex items-center gap-2">
+          <PrivateBadge />
+          <form action={signOutAction}>
+            <button className="btn btn-sm">Sign out</button>
+          </form>
+        </div>
       </div>
       {sp.reset === "1" && <p role="status" className="card p-4 text-success">Your password was updated.</p>}
       <section className="card p-6">
-        <h2 className="mb-1 font-serif text-2xl">Profile and reading</h2>
+        <h2 className="mb-1 text-lg font-semibold tracking-tight">Profile and reading</h2>
         <p className="mb-4 text-sm text-muted">Signed in as {g.user.email}. These preferences sync to every device you sign in on.</p>
         <SettingsForm
           defaults={{
@@ -44,7 +50,7 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
         />
       </section>
       <section className="card p-6">
-        <h2 className="font-serif text-2xl">Your data</h2>
+        <h2 className="text-lg font-semibold tracking-tight">Your data</h2>
         <p className="mt-2 text-sm text-muted">
           Download everything you have saved (bookmarks, highlights, notes, flashcards and reviews, plan progress, journal entries, saved
           guidance, watchlist) as a JSON file. <Link href="/privacy" className="underline">What we store</Link>
@@ -54,7 +60,7 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
         </a>
       </section>
       <section className="card border-danger/40 p-6">
-        <h2 className="font-serif text-2xl text-danger">Delete account</h2>
+        <h2 className="text-lg font-semibold tracking-tight text-danger">Delete account</h2>
         <div className="mt-3">
           <DeleteAccountForm />
         </div>

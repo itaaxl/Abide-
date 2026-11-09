@@ -1,98 +1,119 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { DailyTargetForm, NewDeckForm } from "@/components/flashcards/DeckControls";
-import { gate, PrivateBadge } from "@/components/Gate";
-import { getUserTimezone } from "@/lib/daily";
+import { VerseCarousel, type CarouselCard } from "@/components/flashcards/VerseCarousel";
+import { getSessionUser } from "@/lib/auth";
+import { isIsoDate, ROTATION_EPOCH, todayFor } from "@/lib/daily";
+import { buildFace, type CardRow } from "@/lib/flashcards";
+import { getDictionary, getPrefs } from "@/lib/request";
 import { createClient } from "@/lib/supabase/server";
-import { endOfLocalDay, localDate, startOfLocalDay } from "@/lib/time";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { buildVerseCards } from "@/lib/verse-cards";
 
-export const metadata: Metadata = { title: "Flashcards", robots: { index: false } };
+export const metadata: Metadata = { title: "Verses" };
 
-export default async function FlashcardsPage() {
-  const g = await gate("/flashcards", "Flashcards");
-  if (!g.user) return g.panel;
-  const supabase = (await createClient())!;
-  const tz = await getUserTimezone();
-  const now = new Date();
-  const [{ data: decks }, { data: cards }, { data: profile }, { count: reviewsToday }, { count: reviewsTotal }] = await Promise.all([
-    supabase.from("decks").select("id, name, description").order("created_at"),
-    supabase.from("cards").select("deck_id, due_at, reps, kind, edition, book, chapter, verse_start, verse_end"),
-    supabase.from("profiles").select("daily_review_target").eq("id", g.user.id).maybeSingle(),
-    supabase.from("reviews").select("id", { count: "exact", head: true }).gte("reviewed_at", startOfLocalDay(localDate(now, tz), tz).toISOString()),
-    supabase.from("reviews").select("id", { count: "exact", head: true }),
-  ]);
-  const dueCut = endOfLocalDay(now, tz).getTime();
-  const all = cards ?? [];
-  const dueAll = all.filter((c) => new Date(c.due_at).getTime() < dueCut).length;
-  const passages = new Set(all.filter((c) => c.kind !== "custom").map((c) => `${c.book}.${c.chapter}.${c.verse_start}`)).size;
-  const practised = new Set(all.filter((c) => c.reps > 0 && c.kind !== "custom").map((c) => `${c.book}.${c.chapter}.${c.verse_start}`)).size;
-  const target = profile?.daily_review_target ?? 20;
+/**
+ * Verse cards: today's verse first, then a curated selection. "Saved" shows
+ * the person's existing flashcards (nothing is deleted or migrated).
+ */
+export default async function FlashcardsPage({ searchParams }: PageProps<"/flashcards">) {
+  const sp = await searchParams;
+  const tab = sp.tab === "saved" ? "saved" : "verses";
+  const [{ t }, prefs, user, today] = await Promise.all([getDictionary(), getPrefs(), getSessionUser(), todayFor()]);
+  const c = t.cards;
+  const canSave = Boolean(user?.emailVerified);
+  const labels = {
+    reflection: c.reflection,
+    save: c.save,
+    saved: c.savedLabel,
+    share: c.share,
+    readChapter: c.readChapter,
+    previous: c.previous,
+    next: c.next,
+    signInToSave: c.signInToSave,
+    linkCopied: c.linkCopied,
+    copyFailed: c.copyFailed,
+    of: c.of,
+    yourCard: c.yourCard,
+  };
+
+  let body: React.ReactNode;
+  if (tab === "verses") {
+    // ?date= keeps old /daily/<date> links working: that day's verse comes first.
+    const requested = typeof sp.date === "string" && isIsoDate(sp.date) && sp.date >= ROTATION_EPOCH && sp.date <= today.date ? sp.date : today.date;
+    const cards = await buildVerseCards(requested, prefs.edition, 15);
+    const fmt = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", timeZone: "UTC" });
+    const items: CarouselCard[] = cards.map((v, i) => ({
+      id: `${v.id}-${v.date}`,
+      tag: i === 0 ? (v.date === today.date ? c.today : fmt.format(new Date(`${v.date}T12:00:00Z`))) : undefined,
+      text: v.text,
+      reference: v.reference,
+      editionId: v.editionId,
+      editionAbbr: v.editionAbbr,
+      direction: v.direction,
+      language: v.language,
+      reflection: v.reflection ?? undefined,
+      chapterHref: v.chapterHref,
+      shareKey: v.shareKey,
+      passage: { book: v.book, chapter: v.chapter, verseStart: v.verseStart, verseEnd: v.verseEnd },
+      note: v.fallbackNote,
+    }));
+    body = <VerseCarousel cards={items} labels={labels} canSave={canSave} ariaLabel={c.carousel} />;
+  } else if (!canSave) {
+    body = (
+      <div className="rounded-[28px] border border-rule bg-surface p-8 text-center">
+        <p className="text-muted">{isSupabaseConfigured() ? c.signInSaved : t.common.unavailable}</p>
+        {isSupabaseConfigured() && (
+          <Link href="/auth/sign-in?next=/flashcards?tab=saved" className="btn btn-primary mt-4">
+            {t.nav.signIn}
+          </Link>
+        )}
+      </div>
+    );
+  } else {
+    const supabase = (await createClient())!;
+    const { data } = await supabase.from("cards").select("*").order("created_at", { ascending: false }).limit(100);
+    const faces = (await Promise.all(((data ?? []) as CardRow[]).map(buildFace))).filter((f) => f !== null);
+    const items: CarouselCard[] = faces.map((f) =>
+      f.scripture
+        ? {
+            id: f.id,
+            text: f.kind === "text_to_ref" ? f.front : f.kind === "ref_to_text" ? f.back : f.back,
+            reference: f.reference!,
+            editionId: f.edition,
+            editionAbbr: f.editionAbbr,
+            direction: f.direction,
+            chapterHref: f.href,
+          }
+        : { id: f.id, text: f.front, answer: f.back, reference: "", direction: "ltr", custom: true },
+    );
+    body = items.length ? (
+      <>
+        <VerseCarousel cards={items} labels={labels} canSave={canSave} showSave={false} ariaLabel={c.savedCarousel} />
+        <nav aria-label={c.saved} className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-muted">
+          <Link className="underline-offset-4 hover:underline" href="/flashcards/review?mode=practice">{c.practise}</Link>
+          <Link className="underline-offset-4 hover:underline" href="/flashcards/review">{c.review}</Link>
+          <Link className="underline-offset-4 hover:underline" href="/flashcards/decks">{c.decks}</Link>
+        </nav>
+      </>
+    ) : (
+      <div className="rounded-[28px] border border-rule bg-surface p-8 text-center text-muted">{c.emptySaved}</div>
+    );
+  }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-serif text-4xl">Flashcards</h1>
-        <PrivateBadge />
-      </div>
-      <section className="card mt-6 flex flex-wrap items-center justify-between gap-4 p-6">
-        <div>
-          <p className="font-serif text-2xl">{dueAll} card{dueAll === 1 ? "" : "s"} due today</p>
-          <p className="text-sm text-muted">
-            Reviewed today: {reviewsToday ?? 0} of your goal of {target}. Stopping early is fine.
-          </p>
+    <div className="mx-auto max-w-xl px-4 pb-6 pt-5">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold tracking-tight">{c.title}</h1>
+        <div role="tablist" aria-label={c.title} className="flex rounded-full border border-rule bg-surface p-1 text-sm">
+          <Link role="tab" aria-selected={tab === "verses"} href="/flashcards" className={`rounded-full px-3.5 py-1.5 font-semibold ${tab === "verses" ? "bg-gold text-[var(--on-accent)]" : "text-muted"}`}>
+            {c.verses}
+          </Link>
+          <Link role="tab" aria-selected={tab === "saved"} href="/flashcards?tab=saved" className={`rounded-full px-3.5 py-1.5 font-semibold ${tab === "saved" ? "bg-gold text-[var(--on-accent)]" : "text-muted"}`}>
+            {c.saved}
+          </Link>
         </div>
-        <div className="flex gap-2">
-          <Link href="/flashcards/review" className={`btn ${dueAll ? "btn-primary" : ""}`}>Review due cards</Link>
-          <Link href="/flashcards/review?mode=practice" className="btn">Practise any card</Link>
-        </div>
-      </section>
-      <dl className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {[
-          ["Cards", all.length],
-          ["Passages saved", passages],
-          ["Passages practised", practised],
-          ["Reviews all time", reviewsTotal ?? 0],
-        ].map(([k, v]) => (
-          <div key={k as string} className="card p-4">
-            <dt className="text-sm text-muted">{k}</dt>
-            <dd className="font-serif text-3xl">{v}</dd>
-          </div>
-        ))}
-      </dl>
-      <p className="mt-2 text-xs text-muted">These are simple counts of your activity; they don’t measure how much you’ll remember.</p>
-
-      <h2 className="mt-10 font-serif text-2xl">Decks</h2>
-      {decks?.length ? (
-        <ul className="mt-4 grid gap-4 sm:grid-cols-2">
-          {decks.map((d) => {
-            const inDeck = all.filter((c) => c.deck_id === d.id);
-            const due = inDeck.filter((c) => new Date(c.due_at).getTime() < dueCut).length;
-            const learned = inDeck.filter((c) => c.reps > 0).length;
-            return (
-              <li key={d.id} className="card p-5">
-                <Link href={`/flashcards/decks/${d.id}`} className="font-serif text-xl hover:underline">{d.name}</Link>
-                {d.description && <p className="mt-1 text-sm text-muted">{d.description}</p>}
-                <p className="mt-2 text-sm">{inDeck.length} cards · {due} due · {learned} reviewed at least once</p>
-                <div className="mt-2 h-2 rounded-full bg-rule" aria-hidden="true">
-                  <div className="h-2 rounded-full bg-gold" style={{ width: `${inDeck.length ? (learned / inDeck.length) * 100 : 0}%` }} />
-                </div>
-                <div className="mt-3 flex gap-2">
-                  <Link className="btn btn-sm" href={`/flashcards/review?deck=${d.id}`}>Review</Link>
-                  <Link className="btn btn-sm" href={`/flashcards/review?deck=${d.id}&mode=practice`}>Practise</Link>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      ) : (
-        <p className="mt-4 text-muted">
-          No decks yet. Select a verse in the <Link className="underline" href="/bible">reader</Link> and choose “Make flashcard”, or create a deck below.
-        </p>
-      )}
-      <div className="mt-8 grid gap-6 sm:grid-cols-2">
-        <div className="card p-5"><NewDeckForm /></div>
-        <div className="card p-5"><DailyTargetForm value={target} /></div>
       </div>
+      {body}
     </div>
   );
 }

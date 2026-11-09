@@ -21,7 +21,7 @@ export default async function SavedGuidancePage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <div className="flex items-center justify-between">
-        <h1 className="font-serif text-4xl">Saved guidance</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Saved guidance</h1>
         <PrivateBadge />
       </div>
       {!data?.length ? (

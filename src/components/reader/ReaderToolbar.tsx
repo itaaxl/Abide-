@@ -82,9 +82,9 @@ export function ReaderToolbar({ editions, edition, groups, book, chapter, prefs,
 
   return (
     <div className="no-print mb-6 rounded-2xl border border-rule bg-surface/70 p-3">
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="min-w-[11rem] flex-1">
-          <label htmlFor={`${id}-ed`} className="label">
+      <div className="flex flex-wrap items-end gap-2 sm:gap-3">
+        <div className="min-w-0 flex-1 sm:min-w-[11rem]">
+          <label htmlFor={`${id}-ed`} className="label sr-only sm:not-sr-only">
             {t.translation}
           </label>
           <select id={`${id}-ed`} className="input" value={edition} onChange={(e) => changeEdition(e.target.value)} aria-describedby={`${id}-edh`}>
@@ -95,15 +95,23 @@ export function ReaderToolbar({ editions, edition, groups, book, chapter, prefs,
             ))}
           </select>
         </div>
+        <div className="flex gap-2 sm:order-last">
+          <button className="btn" aria-expanded={settingsOpen} aria-controls={`${id}-settings`} onClick={() => setSettingsOpen((o) => !o)}>
+            <span aria-hidden="true">Aa</span> <span className="sr-only sm:not-sr-only">{t.settings}</span>
+          </button>
+          <button className="btn" onClick={() => setFocus(true)} title={t.focus}>
+            <span aria-hidden="true">⤢</span> <span className="sr-only sm:not-sr-only">{t.focus}</span>
+          </button>
+        </div>
         <form
-          className="flex flex-[2] flex-wrap items-end gap-2"
+          className="flex basis-full items-end gap-2 sm:basis-0 sm:flex-[2]"
           onSubmit={(e) => {
             e.preventDefault();
             go(selBook, Math.min(selChapter, chapters));
           }}
         >
-          <div className="min-w-[10rem] flex-1">
-            <label htmlFor={`${id}-bk`} className="label">
+          <div className="min-w-0 flex-1">
+            <label htmlFor={`${id}-bk`} className="label sr-only sm:not-sr-only">
               {t.book}
             </label>
             <select
@@ -127,8 +135,8 @@ export function ReaderToolbar({ editions, edition, groups, book, chapter, prefs,
               ))}
             </select>
           </div>
-          <div className="w-24">
-            <label htmlFor={`${id}-ch`} className="label">
+          <div className="w-20 shrink-0 sm:w-24">
+            <label htmlFor={`${id}-ch`} className="label sr-only sm:not-sr-only">
               {t.chapter}
             </label>
             <select id={`${id}-ch`} className="input" value={selChapter} onChange={(e) => setSelChapter(Number(e.target.value))}>
@@ -141,16 +149,8 @@ export function ReaderToolbar({ editions, edition, groups, book, chapter, prefs,
           </div>
           <button className="btn btn-primary">{t.go}</button>
         </form>
-        <div className="flex gap-2">
-          <button className="btn" aria-expanded={settingsOpen} aria-controls={`${id}-settings`} onClick={() => setSettingsOpen((o) => !o)}>
-            <span aria-hidden="true">Aa</span> <span className="sr-only sm:not-sr-only">{t.settings}</span>
-          </button>
-          <button className="btn" onClick={() => setFocus(true)} title={t.focus}>
-            <span aria-hidden="true">⤢</span> <span className="sr-only sm:not-sr-only">{t.focus}</span>
-          </button>
-        </div>
       </div>
-      <details className="mt-2 text-xs text-muted">
+      <details className="mt-2 hidden text-xs text-muted sm:block">
         <summary className="cursor-pointer">{t.translation} / {t.book}?</summary>
         <p id={`${id}-edh`} className="mt-1">{t.translationHelp}</p>
         <p id={`${id}-bkh`}>{t.bookHelp}</p>

@@ -178,13 +178,13 @@ export function GuidanceForm({ edition, maxChars, canUse, signInHref }: { editio
             ))}
             {result.practicalSteps.length > 0 && (
               <div>
-                <h2 className="font-serif text-xl">Small steps you might take</h2>
+                <h2 className="text-base font-semibold">Small steps you might take</h2>
                 <ul className="mt-2 list-disc space-y-1 ps-6">{result.practicalSteps.map((s) => <li key={s}>{s}</li>)}</ul>
               </div>
             )}
             {result.prayer && (
               <div>
-                <h2 className="font-serif text-xl">A prayer you could use</h2>
+                <h2 className="text-base font-semibold">A prayer you could use</h2>
                 <p className="mt-2 italic leading-relaxed">{result.prayer}</p>
               </div>
             )}

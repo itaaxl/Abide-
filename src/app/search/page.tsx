@@ -101,7 +101,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="mb-4 font-serif text-3xl">{t.search.label}</h1>
+      <h1 className="mb-4 text-2xl font-bold tracking-tight">{t.search.label}</h1>
       <SearchBar t={t.search} edition={edition.id} defaultValue={q} large />
       <p className="mt-2 text-sm text-muted">
         {edition.name} ({edition.abbreviation}) · {t.search.phraseTip}{" "}

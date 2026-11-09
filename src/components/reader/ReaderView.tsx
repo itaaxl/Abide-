@@ -78,7 +78,7 @@ export async function ReaderView({ edition, book, chapter, target = null, parall
 
       <header className="mb-8 text-center">
         <p className="eyebrow">{edition.name}</p>
-        <H id="chapter-heading" className="mt-2 font-serif text-4xl sm:text-5xl" dir={edition.direction}>
+        <H id="chapter-heading" className="mt-1 font-serif text-3xl font-medium tracking-tight sm:text-[2.4rem]" dir={edition.direction}>
           {bookMeta.name} <span className="text-gold">{chapter}</span>
         </H>
         {chapter === 1 && bookMeta.longName !== bookMeta.name && (

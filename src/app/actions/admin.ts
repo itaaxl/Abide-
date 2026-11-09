@@ -30,6 +30,7 @@ const dailySchema = z.object({
   id: z.string().regex(/^[a-z0-9-]{3,40}$/),
   ref_key: z.string().max(30),
   topic: z.string().min(1).max(40),
+  phrase: z.string().max(140).optional(),
   reflection: z.string().min(1).max(1200),
   prayer: z.string().max(600),
   question: z.string().max(400),

@@ -4,7 +4,7 @@ export function AuthShell({ title, intro, children }: { title: string; intro?: R
   return (
     <div className="mx-auto max-w-md px-4 py-12">
       <div className="card p-6 sm:p-8">
-        <h1 className="font-serif text-3xl">{title}</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
         {intro && <div className="mt-2 text-muted">{intro}</div>}
         <div className="mt-6">
           {isSupabaseConfigured() ? (

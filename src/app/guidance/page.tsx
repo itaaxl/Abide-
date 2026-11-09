@@ -14,7 +14,7 @@ export default async function GuidancePage() {
   const canUse = Boolean(user?.emailVerified);
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="font-serif text-4xl">Find Guidance</h1>
+      <h1 className="text-2xl font-bold tracking-tight">Find Guidance</h1>
       <p className="mt-3 leading-relaxed text-muted">
         Describe what you’re struggling with, hoping for, or trying to grow in. We’ll suggest a few Bible passages and briefly explain why each may be relevant — with links to read the full chapter for context. This is a reading aid, not a pastor, counselor, or doctor.
       </p>

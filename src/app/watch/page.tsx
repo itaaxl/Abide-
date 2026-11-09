@@ -27,7 +27,7 @@ export default async function WatchPage({ searchParams }: PageProps<"/watch">) {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
-      <h1 className="font-serif text-4xl">Watch</h1>
+      <h1 className="text-2xl font-bold tracking-tight">Watch</h1>
       <p className="mt-3 max-w-2xl text-muted">
         Films, series, and teaching videos, each linked to its <strong>official</strong> viewing site. We don’t host, copy, or re-stream anyone’s content, and we aren’t affiliated with these producers. Dramatizations add scenes and dialogue beyond the biblical text — read the Scripture alongside them.
       </p>
@@ -44,7 +44,7 @@ export default async function WatchPage({ searchParams }: PageProps<"/watch">) {
         {list.map((m) => (
           <li key={m.slug} className="card p-6">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="font-serif text-2xl">{m.title}</h2>
+              <h2 className="text-lg font-semibold tracking-tight">{m.title}</h2>
               <span className="text-xs uppercase tracking-wider text-gold">
                 {KIND_LABEL[m.kind]}
                 {m.dramatized && " · dramatization"}

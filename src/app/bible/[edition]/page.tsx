@@ -19,7 +19,7 @@ export default async function EditionPage({ params }: PageProps<"/bible/[edition
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <p className="eyebrow">{t.reader.books}</p>
-      <h1 className="mt-2 font-serif text-4xl">{edition.name}</h1>
+      <h1 className="mt-2 text-2xl font-bold tracking-tight">{edition.name}</h1>
       <p className="mt-2 max-w-2xl text-muted">{edition.canonDescription}</p>
       <nav aria-label={t.reader.translation} className="mt-4 flex flex-wrap gap-2">
         {editions.map((e) => (

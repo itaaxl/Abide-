@@ -30,7 +30,7 @@ async function upsert(table: string, rows: Record<string, unknown>[], key: strin
 async function main() {
   await upsert(
     "content_daily_verses",
-    DAILY_VERSES.map((d) => ({ id: d.id, ref_key: d.ref, topic: d.topic, reflection: d.reflection, prayer: d.prayer, question: d.question, status: "published" })),
+    DAILY_VERSES.map((d) => ({ id: d.id, ref_key: d.ref, topic: d.topic, phrase: d.phrase, reflection: d.reflection, prayer: d.prayer, question: d.question, status: "published" })),
     "id",
   );
   await upsert("content_plans", PLANS.map((p) => ({ slug: p.slug, data: p, status: "published" })), "slug");

@@ -1,14 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import "@fontsource/eb-garamond/400.css";
-import "@fontsource/eb-garamond/400-italic.css";
-import "@fontsource/eb-garamond/600.css";
-import "@fontsource-variable/inter";
-import "@fontsource/amiri/400.css";
-import "@fontsource/amiri/700.css";
+import "@fontsource-variable/plus-jakarta-sans";
+import "@fontsource-variable/newsreader";
+import "@fontsource-variable/noto-naskh-arabic";
+import "@fontsource/ibm-plex-sans-arabic/400.css";
+import "@fontsource/ibm-plex-sans-arabic/600.css";
 import "./globals.css";
 import { site } from "@/config/site";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { BottomNav } from "@/components/BottomNav";
 import { getDictionary, getPrefs } from "@/lib/request";
 
 export const metadata: Metadata = {
@@ -19,15 +19,17 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // Lets the bottom navigation extend under the home indicator, padded by the safe area.
+  viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fbf7ee" },
-    { media: "(prefers-color-scheme: dark)", color: "#15130f" },
+    { media: "(prefers-color-scheme: light)", color: "#f7f5f0" },
+    { media: "(prefers-color-scheme: dark)", color: "#111412" },
   ],
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const prefs = await getPrefs();
-  const { locale, dir } = await getDictionary();
+  const { locale, dir, t } = await getDictionary();
   return (
     <html lang={locale} dir={dir} data-theme={prefs.theme}>
       <body className="antialiased">
@@ -36,6 +38,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           {children}
         </main>
         <SiteFooter />
+        <BottomNav t={t.tabs} />
       </body>
     </html>
   );

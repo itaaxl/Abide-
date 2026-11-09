@@ -14,7 +14,7 @@ export default async function NewEntryPage() {
     <div className="mx-auto max-w-3xl px-4 py-10">
       <Link href="/journal" className="text-sm text-muted underline">← Journal</Link>
       <div className="mt-3 flex items-center justify-between">
-        <h1 className="font-serif text-3xl">New entry</h1>
+        <h1 className="text-2xl font-bold tracking-tight">New entry</h1>
         <PrivateBadge />
       </div>
       <div className="mt-6">

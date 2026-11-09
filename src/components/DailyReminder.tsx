@@ -27,8 +27,8 @@ export function DailyReminder() {
       "DURATION:PT5M",
       "RRULE:FREQ=DAILY",
       `SUMMARY:${site.name}: daily verse`,
-      `DESCRIPTION:Read today's verse: ${site.url}/daily`,
-      `URL:${site.url}/daily`,
+      `DESCRIPTION:Read today's verse: ${site.url}/flashcards`,
+      `URL:${site.url}/flashcards`,
       "END:VEVENT",
       "END:VCALENDAR",
     ].join("\r\n");

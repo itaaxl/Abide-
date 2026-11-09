@@ -56,7 +56,7 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
   return (
     <div className="mx-auto max-w-xl px-4 py-14">
       <div className="card p-8">
-        <h1 className="font-serif text-3xl">{title}</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
         <div className="mt-3 text-muted">{children}</div>
       </div>
     </div>

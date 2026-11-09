@@ -22,7 +22,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
     return (
       <div className="mx-auto max-w-xl px-4 py-14">
         <div className="card p-8">
-          <h1 className="font-serif text-3xl">Admin</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Admin</h1>
           <p className="mt-3 text-muted">Your account doesn’t have administrator access. Administrator roles are granted by the site operator in the database.</p>
         </div>
       </div>
@@ -79,7 +79,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
     const seedCount = { daily: DAILY_VERSES.length, plan: PLANS.length, topic: TOPICS.length, media: MEDIA.length }[tab];
     const template =
       tab === "daily"
-        ? { id: "dv-new", ref_key: "JHN.3.16", topic: "love", reflection: "", prayer: "", question: "" }
+        ? { id: "dv-new", ref_key: "JHN.3.16", topic: "love", phrase: "", reflection: "", prayer: "", question: "" }
         : tab === "plan"
           ? PLANS[0]
           : tab === "topic"
@@ -92,7 +92,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
         </p>
         {(rows ?? []).map((r) => {
           const id = (r.id ?? r.slug) as string;
-          const json = tab === "daily" ? { id: r.id, ref_key: r.ref_key, topic: r.topic, reflection: r.reflection, prayer: r.prayer, question: r.question } : r.data;
+          const json = tab === "daily" ? { id: r.id, ref_key: r.ref_key, topic: r.topic, phrase: r.phrase ?? "", reflection: r.reflection, prayer: r.prayer, question: r.question } : r.data;
           return (
             <section key={id} className="card p-4">
               <h3 className="mb-2 font-semibold">{id}</h3>
@@ -110,7 +110,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
-      <h1 className="font-serif text-4xl">Admin</h1>
+      <h1 className="text-2xl font-bold tracking-tight">Admin</h1>
       <nav aria-label="Admin sections" className="mt-6 flex flex-wrap gap-2 border-b border-rule pb-3">
         {(Object.keys(TABS) as Tab[]).map((t) => (
           <Link key={t} href={`/admin?tab=${t}`} className={`btn btn-sm ${tab === t ? "btn-primary" : ""}`} aria-current={tab === t ? "page" : undefined}>

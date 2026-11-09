@@ -34,7 +34,7 @@ export default async function ReviewPage({ searchParams }: PageProps<"/flashcard
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="mb-6 font-serif text-3xl">{practice ? "Practice" : "Today’s review"}</h1>
+      <h1 className="mb-6 text-2xl font-bold tracking-tight">{practice ? "Practice" : "Today’s review"}</h1>
       <ReviewSession cards={faces} practice={practice} timezone={tz} target={profile?.daily_review_target ?? 20} reviewedToday={reviewedToday ?? 0} />
       <p className="mt-6 text-xs text-muted">
         Keyboard: Space or Enter shows the answer; 1–4 rate it. Intervals come from a simple, documented spaced-repetition schedule — not from AI.

@@ -58,7 +58,14 @@ const ctx = await browser.newContext();
 const page = await ctx.newPage();
 const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
-const signedIn = () => page.getByRole("button", { name: "Sign out" }).first().isVisible();
+const accountLink = (p) => p.getByRole("link", { name: /^Account \(/ });
+/** Sign-out lives on the account page (the header only shows an account link). */
+async function signOut(p) {
+  await p.goto(new URL("/account", p.url()).href, { waitUntil: "networkidle" });
+  await p.getByRole("button", { name: "Sign out" }).click();
+  await p.waitForURL((u) => new URL(u).pathname === "/");
+}
+const signedIn = () => accountLink(page).isVisible();
 
 await check("registration sends a branded verification email with code and button", async () => {
   await page.goto(`${BASE}/auth/sign-up`);
@@ -95,7 +102,7 @@ await check("session persists across reloads and new pages", async () => {
 });
 
 await check("one-time code sign-in (existing account)", async () => {
-  await page.getByRole("button", { name: "Sign out" }).first().click();
+  await signOut(page);
   await page.waitForURL(`${BASE}/`);
   await page.goto(`${BASE}/auth/sign-in`);
   assert(await page.getByRole("tab", { name: "Email me a code", selected: true }).isVisible(), "code is not the default method");
@@ -115,7 +122,7 @@ await check("one-time code sign-in (existing account)", async () => {
 
 await check("magic-link button is single-use (second use shows recovery page)", async () => {
   // The code above consumed this email's token, so its button must no longer work.
-  await page.getByRole("button", { name: "Sign out" }).first().click();
+  await signOut(page);
   await page.waitForURL(`${BASE}/`);
   await page.goto(U.usedLink);
   await page.waitForURL(/\/auth\/error\?reason=expired/);
@@ -136,7 +143,7 @@ await check("magic-link button signs in from a fresh email", async () => {
 });
 
 await check("code attempts are limited", async () => {
-  await page.getByRole("button", { name: "Sign out" }).first().click();
+  await signOut(page);
   execFileSync("psql", [DB_URL, "-qc", "delete from public.rate_limits"]);
   await sleep(1100);
   await page.goto(`${BASE}/auth/sign-in`);
@@ -169,7 +176,7 @@ await check("password sign-in still works", async () => {
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await page.waitForURL(`${BASE}/`);
   assert(await signedIn(), "password sign-in failed");
-  await page.getByRole("button", { name: "Sign out" }).first().click();
+  await signOut(page);
   await page.waitForURL(`${BASE}/`);
 });
 
@@ -188,7 +195,7 @@ await check("verified account using sign-up gets a sign-in code (not silence)", 
   await page.getByRole("button", { name: "Continue" }).click();
   await page.waitForURL(`${BASE}/`);
   assert(await signedIn(), "not signed in");
-  await page.getByRole("button", { name: "Sign out" }).first().click();
+  await signOut(page);
   await page.waitForURL(`${BASE}/`);
 });
 
@@ -220,7 +227,7 @@ await check("password recovery by code, then sign in with the new password", asy
   await page.getByLabel("Confirm new password").fill(U.newPassword);
   await page.getByRole("button", { name: "Update password" }).click();
   await page.waitForURL(/\/account/);
-  await page.getByRole("button", { name: "Sign out" }).first().click();
+  await signOut(page);
   await page.goto(`${BASE}/auth/sign-in`);
   await page.getByRole("tab", { name: "Use password" }).click();
   await page.getByLabel("Email").fill(U.email);

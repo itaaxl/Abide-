@@ -30,6 +30,7 @@ export async function getDailyVerses(): Promise<DailyVerseEntry[]> {
     id: String(r.id),
     ref: String(r.ref_key),
     topic: String(r.topic),
+    phrase: r.phrase ? String(r.phrase) : (DAILY_VERSES.find((d) => d.id === String(r.id))?.phrase ?? String(r.reflection).split(/(?<=[.!?])\s/)[0]),
     reflection: String(r.reflection),
     prayer: String(r.prayer ?? ""),
     question: String(r.question ?? ""),

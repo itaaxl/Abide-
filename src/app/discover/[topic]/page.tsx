@@ -24,7 +24,7 @@ export default async function TopicPage({ params }: PageProps<"/discover/[topic]
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <Link href="/discover" className="text-sm text-muted underline">← Discover</Link>
-      <h1 className="mt-3 font-serif text-4xl">{t.label}</h1>
+      <h1 className="mt-3 text-2xl font-bold tracking-tight">{t.label}</h1>
       <p className="mt-2 text-muted">{t.description}</p>
       <ul className="mt-8 space-y-6">
         {passages.map(({ note, passage }) => {

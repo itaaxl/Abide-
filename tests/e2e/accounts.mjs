@@ -59,6 +59,13 @@ async function latestLink(to, kind) {
 }
 const seen = new Set();
 
+const accountLink = (p) => p.getByRole("link", { name: /^Account \(/ });
+/** Sign-out lives on the account page (the header only shows an account link). */
+async function signOut(p) {
+  await p.goto(new URL("/account", p.url()).href, { waitUntil: "networkidle" });
+  await p.getByRole("button", { name: "Sign out" }).click();
+  await p.waitForURL((u) => new URL(u).pathname === "/");
+}
 const browser = await chromium.launch();
 const ctxA = await browser.newContext({ viewport: { width: 1280, height: 900 } });
 const page = await ctxA.newPage();
@@ -117,7 +124,7 @@ await check("email verification link signs the user in", async () => {
   const link = await latestLink(A.email, "signup");
   await page.goto(link);
   await page.waitForLoadState("networkidle");
-  assert(await page.getByRole("button", { name: "Sign out" }).isVisible(), `not signed in at ${page.url()}`);
+  assert(await accountLink(page).isVisible(), `not signed in at ${page.url()}`);
 });
 
 await check("expired or invalid verification links are handled", async () => {
@@ -155,8 +162,8 @@ await check("flashcard: create, due today, review once, idempotent", async () =>
   await page.locator('[data-verse="1"]').first().click();
   await page.getByRole("button", { name: "Make flashcard" }).click();
   await page.getByText(/already in that deck/).waitFor();
-  await page.goto(`${BASE}/flashcards`, { waitUntil: "networkidle" });
-  assert(await page.getByText("1 card due today").isVisible(), "due count");
+  await page.goto(`${BASE}/flashcards?tab=saved`, { waitUntil: "networkidle" });
+  assert(await page.getByText("Psalms 23:1").first().isVisible(), "saved card missing from Saved tab");
   await page.goto(`${BASE}/flashcards/review`, { waitUntil: "networkidle" });
   await page.keyboard.press("Space");
   await page.getByRole("group", { name: /How well/ }).waitFor();
@@ -165,6 +172,16 @@ await check("flashcard: create, due today, review once, idempotent", async () =>
   await page.getByText(/all caught up/).waitFor();
   const n = execFileSync("psql", [DB_URL, "-tAc", `select count(*) from reviews r join auth.users u on u.id=r.user_id where u.email='${A.email}'`]).toString().trim();
   assert(n === "1", `expected 1 review row, got ${n}`);
+});
+
+await check("verse card Save adds today's verse to Saved (and repeats are harmless)", async () => {
+  await page.goto(`${BASE}/flashcards`, { waitUntil: "networkidle" });
+  const card = page.locator('[aria-roledescription="slide"]:not([aria-hidden="true"])').first();
+  const ref = (await card.getAttribute("aria-label")).split(": ").slice(1).join(": ");
+  await card.getByRole("button", { name: "Save" }).click();
+  await card.getByRole("button", { name: "Saved" }).waitFor();
+  await page.goto(`${BASE}/flashcards?tab=saved`, { waitUntil: "networkidle" });
+  assert(await page.getByText(ref).first().isVisible(), `${ref} not in Saved`);
 });
 
 await check("reading plan: start, mark day complete, persists", async () => {
@@ -219,7 +236,7 @@ for (const path of ["/library", "/library?tab=notes", "/flashcards", "/flashcard
 }
 
 await check("sign out ends the session", async () => {
-  await page.getByRole("button", { name: "Sign out" }).click();
+  await signOut(page);
   await page.waitForURL(`${BASE}/`);
   await page.goto(`${BASE}/journal`);
   assert(await page.getByRole("link", { name: "Sign in" }).first().isVisible(), "still signed in");
@@ -260,7 +277,7 @@ await check("password reset via one-time link, then sign in with new password", 
   await pr.getByLabel("Confirm new password").fill(A.newPassword);
   await pr.getByRole("button", { name: "Update password" }).click();
   await pr.waitForURL(/\/account/);
-  await pr.getByRole("button", { name: "Sign out" }).click();
+  await signOut(pr);
   await signIn(pr, A, A.password);
   await pr.getByText("Email or password is incorrect.").waitFor();
   await signIn(pr, A, A.newPassword);

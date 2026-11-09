@@ -8,31 +8,36 @@
  */
 :root,
 [data-theme="light"] {
-  --paper: #fbf7ee;
-  --surface: #fffdf8;
-  --ink: #1f1a14;
-  --muted: #5f564a;
-  --gold: #7f611b;
-  --gold-soft: #e8d9b0;
-  --rule: #e3d8c2;
-  --focus: #1d4e89;
-  --danger: #9b2c2c;
-  --success: #2f6b3a;
+  --paper: #f7f5f0;
+  --surface: #ffffff;
+  --ink: #1d1f1c;
+  --muted: #565b54;
+  --gold: #2c5d4d; /* primary accent: evergreen (name kept for compatibility) */
+  --gold-soft: #dfeae3;
+  --warm: #b07a2a; /* decorative warm light, never body text */
+  --on-accent: #ffffff;
+  --rule: #e5e2d9;
+  --focus: #1f5ba8;
+  --danger: #a12c2c;
+  --success: #2e6b3d;
   --hl-yellow: #f6e39a;
   --hl-green: #cfe8c4;
   --hl-blue: #cfe0f3;
   --hl-rose: #f3d3d8;
+  --card-glow: radial-gradient(120% 90% at 0% 0%, #fdf8ec 0%, #ffffff 45%, #eef5f0 100%);
   color-scheme: light;
 }
 
 [data-theme="sepia"] {
-  --paper: #f2e6cd;
-  --surface: #f8eedb;
-  --ink: #33281c;
-  --muted: #5e4d39;
-  --gold: #6f5214;
-  --gold-soft: #e0c98f;
-  --rule: #d9c6a1;
+  --paper: #f2eadb;
+  --surface: #faf5eb;
+  --ink: #2e281f;
+  --muted: #5a5043;
+  --gold: #2d5a4a;
+  --gold-soft: #dde5d6;
+  --warm: #a06a1e;
+  --on-accent: #ffffff;
+  --rule: #ddd2bd;
   --focus: #1d4e89;
   --danger: #8f2424;
   --success: #2c6033;
@@ -40,17 +45,20 @@
   --hl-green: #c6dcae;
   --hl-blue: #c3d4e3;
   --hl-rose: #e8c2bf;
+  --card-glow: radial-gradient(120% 90% at 0% 0%, #fbf1dc 0%, #faf5eb 50%, #ece9da 100%);
   color-scheme: light;
 }
 
 [data-theme="dark"] {
-  --paper: #15130f;
-  --surface: #1d1a15;
-  --ink: #ece5d8;
-  --muted: #b3a998;
-  --gold: #d6b46c;
-  --gold-soft: #4a3d22;
-  --rule: #353026;
+  --paper: #111412;
+  --surface: #191d1a;
+  --ink: #e9ece6;
+  --muted: #a8aea5;
+  --gold: #93cbb2;
+  --gold-soft: #22372e;
+  --warm: #d9a95a;
+  --on-accent: #0f1a15;
+  --rule: #2b312c;
   --focus: #8db8ee;
   --danger: #f09a9a;
   --success: #93c99c;
@@ -58,6 +66,7 @@
   --hl-green: #2f4a2a;
   --hl-blue: #243c57;
   --hl-rose: #57303a;
+  --card-glow: radial-gradient(120% 90% at 0% 0%, #23291f 0%, #191d1a 50%, #16211c 100%);
   color-scheme: dark;
 }
 
@@ -68,16 +77,25 @@
   --color-muted: var(--muted);
   --color-gold: var(--gold);
   --color-gold-soft: var(--gold-soft);
+  --color-warm: var(--warm);
   --color-rule: var(--rule);
   --color-focus: var(--focus);
   --color-danger: var(--danger);
   --color-success: var(--success);
-  --font-serif: "EB Garamond", "Amiri", Georgia, "Times New Roman", serif;
-  --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-arabic: "Amiri", "EB Garamond", serif;
-  --radius-card: 0.75rem;
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 16px rgb(0 0 0 / 0.04);
+  /* One stack per role covers English, French and Arabic: the Arabic faces
+     only contain Arabic glyphs, so Latin text uses the first family. */
+  --font-serif: "Newsreader Variable", "Noto Naskh Arabic Variable", Georgia, "Times New Roman", serif;
+  --font-sans: "Plus Jakarta Sans Variable", "IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-arabic: "Noto Naskh Arabic Variable", "Newsreader Variable", serif;
+  --radius-card: 1.25rem;
+  --shadow-card: 0 1px 2px rgb(20 30 25 / 0.04), 0 8px 24px rgb(20 30 25 / 0.06);
   --ease-calm: cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+
+:root {
+  /* Height of the bottom navigation, excluding the device safe area. */
+  --nav-h: 68px;
+  --nav-total: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
 }
 
 html {
@@ -91,10 +109,12 @@ body {
   color: var(--ink);
   font-family: var(--font-sans);
   min-height: 100vh;
+  /* Keep content and buttons clear of the fixed bottom navigation. */
+  padding-bottom: calc(var(--nav-total) + 16px);
 }
 
-:lang(ar) body,
-[dir="rtl"] .font-serif {
+[dir="rtl"] .font-serif,
+.scripture[dir="rtl"] {
   font-family: var(--font-arabic);
 }
 
@@ -291,12 +311,12 @@ mark.search-hit {
   cursor: not-allowed;
 }
 .btn-primary {
-  background: var(--ink);
-  color: var(--paper);
-  border-color: var(--ink);
+  background: var(--gold);
+  color: var(--on-accent);
+  border-color: var(--gold);
 }
 .btn-primary:hover {
-  background: color-mix(in srgb, var(--ink) 85%, var(--gold));
+  background: color-mix(in srgb, var(--gold) 88%, var(--ink));
 }
 .btn-sm {
   min-height: 36px;
@@ -343,21 +363,24 @@ mark.search-hit {
   margin-bottom: 0.35rem;
 }
 .eyebrow {
-  font-size: 0.75rem;
-  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--gold);
   font-weight: 600;
 }
 .prose-page h1 {
-  font-family: var(--font-serif);
-  font-size: 2.25rem;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-size: 1.75rem;
   line-height: 1.15;
   margin-bottom: 1rem;
 }
 .prose-page h2 {
-  font-family: var(--font-serif);
-  font-size: 1.5rem;
+  font-family: var(--font-sans);
+  font-weight: 650;
+  font-size: 1.15rem;
   margin: 2rem 0 0.75rem;
 }
 .prose-page p,
@@ -392,4 +415,16 @@ html[data-focus] header,
 html[data-focus] footer,
 html[data-focus] .reader-secondary {
   display: none !important;
+}
+
+html[data-focus] .bottom-nav {
+  display: none !important;
+}
+
+/* Horizontal scrollers without a visible scrollbar (still touch/keyboard scrollable). */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }

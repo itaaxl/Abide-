@@ -28,7 +28,7 @@ export function ShareCardButton({ text, reference, direction }: { text: string; 
       ctx.direction = direction;
       ctx.textAlign = "center";
       ctx.fillStyle = "#1f1a14";
-      const family = direction === "rtl" ? "Amiri" : "EB Garamond";
+      const family = direction === "rtl" ? "Noto Naskh Arabic Variable" : "Newsreader Variable";
       let size = 56;
       let lines: string[] = [];
       const wrap = () => {
@@ -56,10 +56,10 @@ export function ShareCardButton({ text, reference, direction }: { text: string; 
         y += size * 1.4;
       }
       ctx.fillStyle = "#7f611b";
-      ctx.font = `600 34px "Inter Variable", sans-serif`;
+      ctx.font = `600 34px "Plus Jakarta Sans Variable", sans-serif`;
       ctx.fillText(reference, W / 2, y + 40);
       ctx.fillStyle = "#5f564a";
-      ctx.font = `26px "Inter Variable", sans-serif`;
+      ctx.font = `26px "Plus Jakarta Sans Variable", sans-serif`;
       ctx.fillText(site.name, W / 2, H - 90);
       const url = canvas.toDataURL("image/png");
       const a = document.createElement("a");

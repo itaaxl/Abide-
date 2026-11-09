@@ -26,7 +26,7 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-serif text-4xl">Prayer Journal</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Prayer Journal</h1>
         <PrivateBadge />
       </div>
       <p className="mt-2 text-muted">A private place to write prayers and reflections. Entries are never shared, never public, and never sent to AI.</p>

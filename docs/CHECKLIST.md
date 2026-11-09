@@ -142,11 +142,11 @@ Legend: **T** implemented and tested · **I** implemented, not separately tested
 |---|---|---|
 | 101 | T | 45 curated entries, refs validated |
 | 102 | T | Deterministic by local date; guest default documented |
-| 103 | T | Home and /daily agree (e2e) |
+| 103 | T | Daily verse merged into /flashcards (today’s verse is the first card); old /daily links redirect (e2e) |
 | 104 | I | Selected edition with mapping/fallback notice |
 | 105–106 | I | Editorial reflection, prayer prompt, question — labelled |
 | 107 | T | Save, flashcard, share, open chapter |
-| 108 | I | `/daily/[date]` + archive |
+| 108 | I | `/daily/[date]` → `/flashcards?date=…`; archive → `/flashcards` |
 | 109 | I | Opt-in calendar (.ics) reminder; no push/permission prompt (no push server) |
 | 110 | I | No streaks or guilt language |
 

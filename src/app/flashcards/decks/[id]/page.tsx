@@ -24,14 +24,14 @@ export default async function DeckPage({ params }: PageProps<"/flashcards/decks/
     <div className="mx-auto max-w-4xl px-4 py-10">
       <Link href="/flashcards" className="text-sm text-muted underline">← Flashcards</Link>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-serif text-4xl">{deck.name}</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{deck.name}</h1>
         <PrivateBadge />
       </div>
       <div className="mt-4 flex gap-2">
         <Link className="btn btn-primary" href={`/flashcards/review?deck=${id}`}>Review due</Link>
         <Link className="btn" href={`/flashcards/review?deck=${id}&mode=practice`}>Practise</Link>
       </div>
-      <h2 className="mt-8 font-serif text-2xl">Cards ({faces.length})</h2>
+      <h2 className="mt-8 text-lg font-semibold tracking-tight">Cards ({faces.length})</h2>
       <ul className="mt-4 space-y-3">
         {faces.map(({ row, face }) => (
           <li key={row.id} className="card p-4">
@@ -54,11 +54,11 @@ export default async function DeckPage({ params }: PageProps<"/flashcards/decks/
       </ul>
       <div className="mt-10 grid gap-6 md:grid-cols-2">
         <section className="card p-5">
-          <h2 className="mb-3 font-serif text-xl">Add your own card</h2>
+          <h2 className="mb-3 text-base font-semibold">Add your own card</h2>
           <CustomCardForm deckId={id} />
         </section>
         <section className="card p-5">
-          <h2 className="mb-3 font-serif text-xl">Deck settings</h2>
+          <h2 className="mb-3 text-base font-semibold">Deck settings</h2>
           <DeckSettings id={id} name={deck.name} description={deck.description ?? ""} />
         </section>
       </div>

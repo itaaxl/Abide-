@@ -67,7 +67,7 @@ export default async function PlanPage({ params }: PageProps<"/plans/[slug]">) {
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <Link href="/plans" className="text-sm text-muted underline">← Reading Plans</Link>
-      <h1 className="mt-3 font-serif text-4xl">{plan.title}</h1>
+      <h1 className="mt-3 text-2xl font-bold tracking-tight">{plan.title}</h1>
       <p className="mt-1 text-gold">
         {plan.days.length} days · about {plan.minutesPerDay} minutes a day · {edition.name}
       </p>

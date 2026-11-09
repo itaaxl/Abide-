@@ -55,7 +55,7 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-serif text-4xl">My Library</h1>
+        <h1 className="text-2xl font-bold tracking-tight">My Library</h1>
         <PrivateBadge />
       </div>
       <nav aria-label="Library sections" className="mt-6 flex gap-2 border-b border-rule">

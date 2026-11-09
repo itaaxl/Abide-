@@ -14,9 +14,9 @@ export default function CreditsPage() {
       </ul>
       <h2>Fonts</h2>
       <ul>
-        <li>EB Garamond — SIL Open Font License 1.1 (served from this site via the Fontsource package).</li>
-        <li>Inter — SIL Open Font License 1.1.</li>
-        <li>Amiri — SIL Open Font License 1.1.</li>
+        <li>Newsreader — SIL Open Font License 1.1 (served from this site via the Fontsource package).</li>
+        <li>Plus Jakarta Sans — SIL Open Font License 1.1.</li>
+        <li>Noto Naskh Arabic and IBM Plex Sans Arabic — SIL Open Font License 1.1.</li>
       </ul>
       <h2>Artwork</h2>
       <p>The logo (an open book with a cross) and all interface graphics are original to this site. We do not use third-party film artwork.</p>

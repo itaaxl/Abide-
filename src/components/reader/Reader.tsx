@@ -376,7 +376,7 @@ export function Reader(props: ReaderProps) {
         <div
           role="region"
           aria-label={refLabel}
-          className="no-print fixed inset-x-0 bottom-0 z-30 border-t border-rule bg-surface/97 shadow-[0_-4px_20px_rgb(0_0_0/0.06)]"
+          className="no-print fixed inset-x-0 bottom-[var(--nav-total)] z-30 border-t border-rule bg-surface/97 shadow-[0_-4px_20px_rgb(0_0_0/0.06)] lg:bottom-[calc(var(--nav-h)+1.5rem)] lg:mx-auto lg:max-w-3xl lg:rounded-2xl lg:border"
         >
           <div className="mx-auto max-w-3xl px-4 py-3">
             <div className="mb-2 flex items-center justify-between gap-2">

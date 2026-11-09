@@ -41,7 +41,14 @@ const browser = await chromium.launch();
 const ctx = await browser.newContext();
 const page = await ctx.newPage();
 page.on("framenavigated", (f) => f === page.mainFrame() && visited.push(f.url()));
-const signedIn = () => page.getByRole("button", { name: "Sign out" }).first().isVisible();
+const accountLink = (p) => p.getByRole("link", { name: /^Account \(/ });
+/** Sign-out lives on the account page (the header only shows an account link). */
+async function signOut(p) {
+  await p.goto(new URL("/account", p.url()).href, { waitUntil: "networkidle" });
+  await p.getByRole("button", { name: "Sign out" }).click();
+  await p.waitForURL((u) => new URL(u).pathname === "/");
+}
+const signedIn = () => accountLink(page).isVisible();
 const U = { email: `abide-live-${run}@example.com`, password: "Live-test-pass-1", newPassword: "Live-test-pass-2" };
 
 await check("Supabase verify links redirect to the live site, never localhost", async () => {
@@ -79,14 +86,14 @@ await check("private saved data persists (bookmark + note)", async () => {
 });
 
 await check("used verification link cannot be reused", async () => {
-  await page.getByRole("button", { name: "Sign out" }).first().click();
+  await signOut(page);
   await page.waitForURL(`${BASE}/`);
   const d = await link("magiclink", U.email);
   const url = `${BASE}/auth/confirm?token_hash=${d.properties.hashed_token}&type=email&next=/`;
   await page.goto(url);
   await page.waitForURL(`${BASE}/`);
   assert(await signedIn(), "magic link did not sign in");
-  await page.getByRole("button", { name: "Sign out" }).first().click();
+  await signOut(page);
   await page.waitForURL(`${BASE}/`);
   await page.goto(url);
   await page.waitForURL(/\/auth\/error\?reason=expired/);
@@ -100,7 +107,7 @@ await check("password recovery link → new password → password sign-in", asyn
   await page.getByLabel("Confirm new password").fill(U.newPassword);
   await page.getByRole("button", { name: "Update password" }).click();
   await page.waitForURL(/\/account/);
-  await page.getByRole("button", { name: "Sign out" }).first().click();
+  await signOut(page);
   await page.goto(`${BASE}/auth/sign-in`);
   const tab = page.getByRole("tab", { name: "Use password" });
   if (await tab.count()) await tab.click();

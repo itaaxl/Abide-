@@ -31,7 +31,7 @@ export default async function BookPage({ params }: PageProps<"/bible/[edition]/[
       <Link href={`/bible/${id}`} className="text-sm text-muted underline">
         ← {t.reader.books}
       </Link>
-      <h1 className="mt-4 font-serif text-4xl">{book.name}</h1>
+      <h1 className="mt-4 text-2xl font-bold tracking-tight">{book.name}</h1>
       {book.longName !== book.name && <p className="mt-1 font-serif italic text-muted">{book.longName}</p>}
       {BOOK_INTROS[book.id] && (
         <aside className="card mt-6 p-5" dir="ltr" lang="en">

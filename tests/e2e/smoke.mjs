@@ -4,7 +4,7 @@
  *   npm run build && npm start &   # or npm run dev
  *   BASE_URL=http://localhost:3000 npm run test:e2e
  *
- * Covers guest flows (reader, navigation, search, daily verse, plans, watch,
+ * Covers guest flows (reader, bottom navigation, search, verse cards, plans, watch,
  * guidance gating, auth pages), CSP violations, keyboard focus, responsive
  * layouts, RTL, and automated accessibility (axe-core, WCAG 2.1 A/AA).
  * Signed-in flows need a configured Supabase test project (see docs/TESTING.md).
@@ -38,11 +38,11 @@ page.on("console", (m) => {
 });
 page.on("pageerror", (e) => cspErrors.push(`pageerror: ${e.message.slice(0, 200)}`));
 
-await check("home shows search, daily verse, reader and book browser", async () => {
+await check("home shows search, reader and book browser (no duplicate daily panel)", async () => {
   await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
   assert(await page.getByRole("search").first().isVisible(), "search missing");
   assert((await page.getByPlaceholder(/John 3:16/).count()) > 0, "example hint missing");
-  assert(await page.getByText(/Today’s verse/i).first().isVisible(), "daily verse missing");
+  assert((await page.locator('[aria-roledescription="carousel"]').count()) === 0, "verse carousel should live on /flashcards only");
   assert((await page.locator("article.scripture").count()) > 0, "reader missing");
   assert((await page.getByRole("heading", { name: /Old Testament/ }).count()) > 0, "OT browser missing");
   assert((await page.getByRole("heading", { name: /New Testament/ }).count()) > 0, "NT browser missing");
@@ -103,13 +103,87 @@ await check("Arabic edition renders right-to-left", async () => {
   assert((await page.locator("article.scripture").getAttribute("dir")) === "rtl", "not rtl");
 });
 
-await check("daily verse page and home agree on the passage", async () => {
-  await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
-  const home = await page.locator("figcaption .text-gold").first().innerText();
-  await page.goto(`${BASE}/daily`, { waitUntil: "networkidle" });
-  const daily = await page.locator("figcaption .text-gold").first().innerText();
-  assert(home === daily, `${home} != ${daily}`);
-  assert(await page.getByText(/Editorial content/).isVisible(), "editorial label missing");
+await check("old Daily Verse links redirect to the verse cards", async () => {
+  for (const path of ["/daily", "/daily/archive", "/daily/2026-11-01"]) {
+    await page.goto(`${BASE}${path}`, { waitUntil: "networkidle" });
+    assert(new URL(page.url()).pathname === "/flashcards", `${path} -> ${page.url()}`);
+  }
+  assert(page.url().includes("date=2026-11-01"), "dated link lost its date");
+});
+
+await check("verse cards: real verse first, prev/next, keyboard, swipe", async () => {
+  await page.goto(`${BASE}/flashcards`, { waitUntil: "networkidle" });
+  const active = () => page.locator('[aria-roledescription="slide"]:not([aria-hidden="true"])').first();
+  const first = await active().getAttribute("aria-label");
+  assert(/^1 of \d+: /.test(first ?? ""), `first slide: ${first}`);
+  assert(await active().getByText("Today").isVisible(), "today tag missing");
+  assert(await active().getByText("Reflection").isVisible(), "reflection label missing");
+  assert((await active().locator("blockquote").innerText()).length > 20, "no verse text");
+  // verse text is real, selectable text
+  const sel = await active().locator("blockquote").evaluate((el) => getComputedStyle(el).userSelect);
+  assert(sel !== "none", "verse text not selectable");
+  await page.getByRole("button", { name: "Next verse" }).click();
+  await page.waitForFunction(() => document.querySelector('[aria-roledescription="slide"]:not([aria-hidden="true"])')?.getAttribute("aria-label")?.startsWith("2 of"));
+  await page.getByRole("button", { name: "Previous verse" }).click();
+  await page.waitForFunction(() => document.querySelector('[aria-roledescription="slide"]:not([aria-hidden="true"])')?.getAttribute("aria-label")?.startsWith("1 of"));
+  await page.locator('[aria-roledescription="carousel"] [tabindex="0"]').first().focus();
+  await page.keyboard.press("ArrowRight");
+  await page.waitForFunction(() => document.querySelector('[aria-roledescription="slide"]:not([aria-hidden="true"])')?.getAttribute("aria-label")?.startsWith("2 of"));
+  const href = await active().getByRole("link", { name: "Read chapter" }).getAttribute("href");
+  assert(/^\/bible\/eng-web\/[1-3A-Z]{3}\/\d+/.test(href ?? ""), `chapter link ${href}`);
+  // Swipe on a touch phone
+  const c = await browser.newContext(devices["iPhone SE"]);
+  const p = await c.newPage();
+  await p.goto(`${BASE}/flashcards`, { waitUntil: "networkidle" });
+  const track = p.locator('[aria-roledescription="carousel"] [tabindex="0"]').first();
+  const box = await track.boundingBox();
+  const cdp = await c.newCDPSession(p);
+  const y = box.y + 120;
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: box.x + box.width - 30, y }] });
+  for (let i = 1; i <= 8; i++) await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: box.x + box.width - 30 - i * 30, y }] });
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+  await p.waitForFunction(() => document.querySelector('[aria-roledescription="slide"]:not([aria-hidden="true"])')?.getAttribute("aria-label")?.startsWith("2 of"), null, { timeout: 5000 });
+  await c.close();
+});
+
+await check("bottom navigation: all sections, active state, never covers content", async () => {
+  const c = await browser.newContext(devices["iPhone SE"]);
+  const p = await c.newPage();
+  await p.goto(`${BASE}/flashcards`, { waitUntil: "networkidle" });
+  const nav = p.getByRole("navigation", { name: "Main" });
+  for (const name of ["Bible", "Verses", "Guidance", "Plans", "Watch", "Library", "Journal", "Discover"]) {
+    assert((await nav.getByRole("link", { name }).count()) === 1, `${name} missing`);
+  }
+  assert((await nav.getByRole("link", { name: "Verses" }).getAttribute("aria-current")) === "page", "active state missing");
+  assert((await p.getByRole("button", { name: /^Menu$/ }).count()) === 0, "old Menu button still present");
+  // Scroll to the very bottom: the last content must sit above the bar.
+  for (const path of ["/flashcards", "/bible/eng-web/PSA/117", "/plans", "/watch"]) {
+    await p.goto(`${BASE}${path}`, { waitUntil: "networkidle" });
+    await p.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await p.waitForTimeout(150);
+    const { navTop, lastBottom } = await p.evaluate(() => {
+      const navTop = document.querySelector(".bottom-nav").getBoundingClientRect().top;
+      const els = [...document.querySelectorAll("footer a, footer p")].filter((e) => e.getBoundingClientRect().height > 0);
+      const lastBottom = Math.max(...els.map((e) => e.getBoundingClientRect().bottom));
+      return { navTop, lastBottom };
+    });
+    assert(lastBottom <= navTop + 1, `${path}: footer ends at ${lastBottom}, nav starts at ${navTop}`);
+  }
+  await c.close();
+});
+
+await check("Arabic interface: RTL layout and Arabic verse card", async () => {
+  const c = await browser.newContext(devices["iPhone SE"]);
+  await c.addCookies([{ name: "abide_prefs", value: encodeURIComponent(JSON.stringify({ locale: "ar", edition: "arb-vd" })), url: BASE }]);
+  const p = await c.newPage();
+  await p.goto(`${BASE}/flashcards`, { waitUntil: "networkidle" });
+  assert((await p.locator("html").getAttribute("dir")) === "rtl", "html not rtl");
+  const q = p.locator('[aria-roledescription="slide"]:not([aria-hidden="true"]) blockquote').first();
+  assert((await q.getAttribute("dir")) === "rtl", "verse not rtl");
+  assert(/[\u0600-\u06FF]/.test(await q.innerText()), "verse not Arabic");
+  const overflow = await p.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  assert(overflow <= 1, `overflows by ${overflow}px`);
+  await c.close();
 });
 
 await check("reading plans list real passages", async () => {
@@ -155,7 +229,7 @@ await check("keyboard: skip link is first and focus is visible", async () => {
   assert(/Skip to content/.test(text ?? ""), `first focus: ${text}`);
 });
 
-for (const path of ["/", "/bible/eng-web/PSA/23", "/search?q=love", "/daily", "/plans", "/watch", "/auth/sign-up", "/guidance", "/bible/arb-vd/JHN/1"]) {
+for (const path of ["/", "/bible/eng-web/PSA/23", "/search?q=love", "/flashcards", "/plans", "/watch", "/auth/sign-up", "/guidance", "/bible/arb-vd/JHN/1"]) {
   await check(`axe WCAG A/AA: ${path}`, async () => {
     await page.goto(`${BASE}${path}`, { waitUntil: "networkidle" });
     const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
@@ -175,6 +249,7 @@ for (const theme of ["sepia", "dark"]) {
 await ctx.clearCookies();
 
 for (const [name, opts] of [
+  ["small phone", devices["iPhone SE"]],
   ["phone", devices["iPhone 13"]],
   ["phone landscape", devices["iPhone 13 landscape"]],
   ["tablet", devices["iPad (gen 7)"]],
@@ -183,7 +258,7 @@ for (const [name, opts] of [
   await check(`no horizontal overflow on ${name}`, async () => {
     const c = await browser.newContext(opts);
     const p = await c.newPage();
-    for (const path of ["/", "/bible/eng-web/PSA/119", "/bible/arb-vd/ROM/8", "/search?q=love", "/watch"]) {
+    for (const path of ["/", "/flashcards", "/bible/eng-web/PSA/119", "/bible/arb-vd/ROM/8", "/search?q=love", "/watch"]) {
       await p.goto(`${BASE}${path}`, { waitUntil: "networkidle" });
       const overflow = await p.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       assert(overflow <= 1, `${path} overflows by ${overflow}px`);
