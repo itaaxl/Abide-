@@ -50,3 +50,9 @@ Real emails sent by Supabase through Resend (`Abide <no-reply@axly.org>`) to Res
 - The same email's button afterwards → rejected as used (single-use) → recovery page.
 - Password reset → "Reset your Abide password" **delivered** → button opened in a fresh browser (no cookies) → new password set → old password rejected, new password signs in.
 - Every email: Abide branding, code, 15-minute expiry, ignore notice; all links on https://abide-omega.vercel.app; no page opened localhost.
+
+## Incident: no email for an existing verified account (2026-11-09)
+- Supabase Auth logs: `POST /signup` (action `user_repeated_signup`) then `POST /resend`, both HTTP 200. Resend logs: nothing sent to that address; no suppressions.
+- Cause: Supabase deliberately sends nothing when an already-verified address signs up again or requests a verification resend, while the site said an email was on its way.
+- Fix (commit 48c409a): a service-role-only lookup (`auth_email_status`) makes sign-up and "resend" send a Supabase sign-in code to verified accounts; the page text is the same for new and existing addresses. Migration applied in production by the build.
+- Verified: local email suite 14/14 (two new regression checks); live, a verified test account using sign-up received "Your Abide sign-in code" (Resend: delivered) and landed on the code page. Test account deleted; the owner's account was not modified.
