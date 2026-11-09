@@ -77,13 +77,13 @@ await check("registration sends a branded verification email with code and butto
 
 await check("wrong verification code is rejected with recovery help", async () => {
   await page.getByLabel(/digit code/).fill("1".repeat(OTP_LENGTH));
-  await page.getByRole("button", { name: "Verify my account" }).click();
+  await page.getByRole("button", { name: "Continue" }).click();
   await page.getByText(/incorrect or has expired/).waitFor();
 });
 
 await check("verification by code signs the new account in", async () => {
   await page.getByLabel(/digit code/).fill(U.verifyCode);
-  await page.getByRole("button", { name: "Verify my account" }).click();
+  await page.getByRole("button", { name: "Continue" }).click();
   await page.waitForURL(`${BASE}/`);
   assert(await signedIn(), "not signed in");
 });
@@ -171,6 +171,37 @@ await check("password sign-in still works", async () => {
   assert(await signedIn(), "password sign-in failed");
   await page.getByRole("button", { name: "Sign out" }).first().click();
   await page.waitForURL(`${BASE}/`);
+});
+
+await check("verified account using sign-up gets a sign-in code (not silence)", async () => {
+  execFileSync("psql", [DB_URL, "-qc", "delete from public.rate_limits"]);
+  await sleep(1100);
+  await page.goto(`${BASE}/auth/sign-up`);
+  await page.getByLabel("Email").fill(U.email);
+  await page.getByLabel("Password", { exact: true }).fill("another-pass-789");
+  await page.getByLabel("Confirm password").fill("another-pass-789");
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button", { name: "Create account" }).click();
+  await page.waitForURL(/check-email/);
+  const mail = await nextEmail(U.email, /Your Abide sign-in code/);
+  await page.getByLabel(/digit code/).fill(mail.code);
+  await page.getByRole("button", { name: "Continue" }).click();
+  await page.waitForURL(`${BASE}/`);
+  assert(await signedIn(), "not signed in");
+  await page.getByRole("button", { name: "Sign out" }).first().click();
+  await page.waitForURL(`${BASE}/`);
+});
+
+await check("verified account pressing 'resend verification' gets a sign-in code", async () => {
+  execFileSync("psql", [DB_URL, "-qc", "delete from public.rate_limits"]);
+  await sleep(1100);
+  await page.goto(`${BASE}/auth/check-email?email=${encodeURIComponent(U.email)}`);
+  await page.getByRole("button", { name: /Resend verification email|Resend available/ }).waitFor();
+  await page.waitForFunction(() => [...document.querySelectorAll("button")].some((b) => b.textContent === "Resend verification email"), null, { timeout: 70000 });
+  await page.getByRole("button", { name: "Resend verification email" }).click();
+  await page.getByText(/a new email is on its way/).waitFor();
+  const mail = await nextEmail(U.email, /Your Abide sign-in code/);
+  assert(mail.code, "no code");
 });
 
 await check("password recovery by code, then sign in with the new password", async () => {

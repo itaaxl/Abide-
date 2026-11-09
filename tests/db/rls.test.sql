@@ -118,6 +118,12 @@ do $$ begin
 exception when insufficient_privilege then raise notice 'PASS: AI quota function not exposed to users';
 end $$;
 
+do $$ begin
+  perform public.auth_email_status('a@example.test');
+  raise exception 'FAIL: user called auth_email_status';
+exception when insufficient_privilege then raise notice 'PASS: account lookup not exposed to users';
+end $$;
+
 -- Curated content: drafts hidden from non-admins; non-admins cannot write.
 reset role;
 insert into public.content_plans (slug, data, status) values ('draft-plan', '{}', 'draft'), ('pub-plan', '{}', 'published');
@@ -167,5 +173,7 @@ select pg_temp.expect(public.consume_rate_limit('k', 2, 60) and public.consume_r
 select pg_temp.expect(public.reserve_ai_request('bbbbbbbb-0000-0000-0000-000000000002', current_date, 2) = 1, 'quota reserve 1');
 select pg_temp.expect(public.reserve_ai_request('bbbbbbbb-0000-0000-0000-000000000002', current_date, 2) = 2, 'quota reserve 2');
 select pg_temp.expect(public.reserve_ai_request('bbbbbbbb-0000-0000-0000-000000000002', current_date, 2) = -1, 'quota exhausted');
+
+select pg_temp.expect(public.auth_email_status('B@EXAMPLE.TEST') = 'confirmed' and public.auth_email_status('nobody@example.test') = 'none', 'email status lookup (service role)');
 
 \echo 'ALL RLS TESTS PASSED'

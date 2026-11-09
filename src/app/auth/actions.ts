@@ -6,7 +6,7 @@ import { site } from "@/config/site";
 import { CODE_PHRASE, EMAIL_CODES, OTP_EXPIRY_MINUTES, OTP_LENGTH } from "@/lib/auth-config";
 import { clientIp, consume } from "@/lib/rate-limit";
 import { safeNext } from "@/lib/safe-redirect";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { emailSchema, passwordSchema } from "@/lib/validation";
 
 export interface FormState {
@@ -41,8 +41,33 @@ async function applyAccountPrefs(supabase: NonNullable<Awaited<ReturnType<typeof
   }
 }
 
+/**
+ * Which email an address should receive: Supabase sends nothing when a
+ * verified address signs up again or requests a verification resend, so we
+ * send a sign-in code in that case. Server-only (service role).
+ */
+async function emailStatus(email: string): Promise<"none" | "unconfirmed" | "confirmed" | null> {
+  const admin = createAdminClient();
+  if (!admin) return null;
+  const { data, error } = await admin.rpc("auth_email_status", { p_email: email });
+  if (error) {
+    console.error("auth: email status lookup failed", { code: error.code });
+    return null;
+  }
+  return data as "none" | "unconfirmed" | "confirmed";
+}
+
+async function sendSignInCode(supabase: NonNullable<Awaited<ReturnType<typeof createClient>>>, email: string, next = "/") {
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: { shouldCreateUser: false, emailRedirectTo: callbackUrl(safeNext(next)) },
+  });
+  return error;
+}
+
 // ---------------------------------------------------------------------------
 // Registration and account verification
+
 // ---------------------------------------------------------------------------
 
 export async function signUpAction(_: FormState, formData: FormData): Promise<FormState> {
@@ -60,6 +85,15 @@ export async function signUpAction(_: FormState, formData: FormData): Promise<Fo
 
   if (!(await consume(`signup:${await clientIp()}`, 5, 3600)))
     return { error: "Too many sign-up attempts from this network. Please try again later." };
+
+  // Existing verified account: Supabase would silently send nothing, so send a
+  // sign-in code instead. The next page reads the same either way.
+  if (EMAIL_CODES && (await emailStatus(email.data!)) === "confirmed") {
+    const sendErr = await sendSignInCode(supabase, email.data!);
+    if (sendErr) return { error: sendError(sendErr), email: email.data };
+    await consume(`resend:${email.data}`, 1, 60);
+    redirect(`/auth/check-email?email=${encodeURIComponent(email.data!)}`);
+  }
 
   const { error } = await supabase.auth.signUp({
     email: email.data!,
@@ -87,10 +121,17 @@ export async function resendVerificationAction(_: FormState, formData: FormData)
   // Server-side cooldown: 1 per 60s per address, 5 per hour per network.
   if (!(await consume(`resend:${email.data}`, 1, 60)) || !(await consume(`resend-ip:${ip}`, 5, 3600)))
     return { error: WAIT, email: email.data, cooldown: 60 };
-  const { error } = await supabase.auth.resend({ type: "signup", email: email.data, options: { emailRedirectTo: callbackUrl("/") } });
+  const status = await emailStatus(email.data);
+  let error: AuthError | null = null;
+  if (status === "confirmed" && EMAIL_CODES) {
+    // Verified account: a verification resend would send nothing, so send a sign-in code.
+    error = await sendSignInCode(supabase, email.data);
+  } else if (status !== "none") {
+    ({ error } = await supabase.auth.resend({ type: "signup", email: email.data, options: { emailRedirectTo: callbackUrl("/") } }));
+  }
   if (error) return { error: sendError(error), email: email.data, cooldown: 60 };
   return {
-    message: `If that address has an account waiting for verification, a new email is on its way. Use the newest ${EMAIL_CODES ? "code or link" : "link"}; it expires in ${OTP_EXPIRY_MINUTES} minutes.`,
+    message: `If ${email.data} has an Abide account or a pending sign-up, a new email is on its way. Use the newest ${EMAIL_CODES ? "code or button" : "button"}; it expires in ${OTP_EXPIRY_MINUTES} minutes.`,
     email: email.data,
     cooldown: 60,
   };

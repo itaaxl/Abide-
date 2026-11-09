@@ -211,7 +211,7 @@ export function CodeForm({ email, purpose, next = "/" }: { email: string; purpos
         </p>
       </div>
       <button className="btn btn-primary w-full" disabled={pending}>
-        {pending ? "Checking…" : purpose === "recovery" ? "Continue to new password" : purpose === "signup" ? "Verify my account" : "Sign in"}
+        {pending ? "Checking…" : purpose === "recovery" ? "Continue to new password" : purpose === "signup" ? "Continue" : "Sign in"}
       </button>
     </form>
   );

@@ -15,7 +15,8 @@ export default async function CheckEmailPage({ searchParams }: PageProps<"/auth/
       title="Check your email"
       intro={
         <>
-          We sent a verification email{email ? <> to <strong className="text-ink">{email}</strong></> : null}. {EMAIL_CODES ? `Tap its button, or enter the ${OTP_LENGTH}-digit code below,` : "Tap its button"} to finish creating your account. This verifies a new account; to sign in later, use “Email me a code” or your password.
+          We sent an email{email ? <> to <strong className="text-ink">{email}</strong></> : null}. If you’re new, it verifies your account. If this
+          address already has an Abide account, it contains a sign-in code instead. {EMAIL_CODES ? `Tap its button, or enter the ${OTP_LENGTH}-digit code below.` : "Tap its button."}
         </>
       }
     >
