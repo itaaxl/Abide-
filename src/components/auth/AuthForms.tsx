@@ -12,7 +12,7 @@ import {
   verifyCodeAction,
   type FormState,
 } from "@/app/auth/actions";
-import { EMAIL_CODES, OTP_EXPIRY_MINUTES, OTP_LENGTH } from "@/lib/auth-config";
+import { CODE_PHRASE, EMAIL_CODES, OTP_EXPIRY_MINUTES, OTP_LENGTH } from "@/lib/auth-config";
 import { PASSWORD_RULES } from "@/lib/validation";
 
 function Field({
@@ -273,7 +273,7 @@ function CodeSignIn({ next }: { next: string }) {
           </a>
         </>
       )}
-      {!sent && <p className="text-xs text-muted">No password needed. We’ll email you a {OTP_LENGTH}-digit code that works once.</p>}
+      {!sent && <p className="text-xs text-muted">No password needed. We’ll email you {CODE_PHRASE} that works once.</p>}
     </div>
   );
 }

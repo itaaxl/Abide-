@@ -42,3 +42,11 @@ Sign-up field validation and live password rules; show-password; check-your-emai
 | `tests/e2e/live-auth.mjs` | **live** https://abide-omega.vercel.app with real Supabase tokens (admin-generated, no mailbox) | **8 / 8** — Supabase verify links redirect to the live site (not localhost), verification signs in, session persists, bookmark + note persist, used link rejected, recovery → new password → password sign-in, honest error when the email can't be sent, no page opened localhost |
 
 Not yet tested live: actual email delivery through Resend and code entry in production (blocked on a verified sending domain; codes are off in production until then). Resend delivery logs: no emails sent yet.
+
+## Live email delivery (2026-11-09, https://abide-omega.vercel.app, Resend SMTP)
+Real emails sent by Supabase through Resend (`Abide <no-reply@axly.org>`) to Resend's `delivered@resend.dev` test address; codes read from Resend's sent-email log and entered on the live site:
+- Registration via the live form → "Confirm your Abide account" **delivered** → 8-digit code verified the account → signed in; session persisted across reload; bookmark saved.
+- Code sign-in → "Your Abide sign-in code" **delivered** → code signed in; second send blocked by the 60 s cooldown; bookmark still present.
+- The same email's button afterwards → rejected as used (single-use) → recovery page.
+- Password reset → "Reset your Abide password" **delivered** → button opened in a fresh browser (no cookies) → new password set → old password rejected, new password signs in.
+- Every email: Abide branding, code, 15-minute expiry, ignore notice; all links on https://abide-omega.vercel.app; no page opened localhost.

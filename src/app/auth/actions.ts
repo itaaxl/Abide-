@@ -3,7 +3,7 @@
 import type { AuthError } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { site } from "@/config/site";
-import { EMAIL_CODES, OTP_EXPIRY_MINUTES, OTP_LENGTH } from "@/lib/auth-config";
+import { CODE_PHRASE, EMAIL_CODES, OTP_EXPIRY_MINUTES, OTP_LENGTH } from "@/lib/auth-config";
 import { clientIp, consume } from "@/lib/rate-limit";
 import { safeNext } from "@/lib/safe-redirect";
 import { createClient } from "@/lib/supabase/server";
@@ -121,7 +121,7 @@ export async function sendLoginCodeAction(_: FormState, formData: FormData): Pro
     step: "code",
     email: email.data,
     cooldown: 60,
-    message: `If ${email.data} belongs to an Abide account, a ${OTP_LENGTH}-digit code is on its way. It expires in ${OTP_EXPIRY_MINUTES} minutes.`,
+    message: `If ${email.data} belongs to an Abide account, ${CODE_PHRASE} is on its way. It expires in ${OTP_EXPIRY_MINUTES} minutes.`,
   };
 }
 
@@ -196,7 +196,7 @@ export async function forgotPasswordAction(_: FormState, formData: FormData): Pr
     email: email.data,
     cooldown: 60,
     message: EMAIL_CODES
-      ? `If an account exists for ${email.data}, we sent a reset email with a button and a ${OTP_LENGTH}-digit code. Both work once and expire in ${OTP_EXPIRY_MINUTES} minutes.`
+      ? `If an account exists for ${email.data}, we sent a reset email with a button and ${CODE_PHRASE}. Both work once and expire in ${OTP_EXPIRY_MINUTES} minutes.`
       : `If an account exists for ${email.data}, we sent a reset email. Its button works once and expires in ${OTP_EXPIRY_MINUTES} minutes.`,
   };
 }

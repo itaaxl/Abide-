@@ -13,3 +13,6 @@ export const RESEND_COOLDOWN_SECONDS = 60;
  * keep this off until custom SMTP + templates are applied (docs/EMAIL.md).
  */
 export const EMAIL_CODES = process.env.NEXT_PUBLIC_AUTH_EMAIL_CODES === "true";
+
+/** "an 8-digit code" / "a 6-digit code" */
+export const CODE_PHRASE = `${[8, 11, 18].includes(OTP_LENGTH) ? "an" : "a"} ${OTP_LENGTH}-digit code`;
