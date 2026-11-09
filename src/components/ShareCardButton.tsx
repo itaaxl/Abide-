@@ -55,12 +55,19 @@ export function ShareCardButton({ text, reference, direction }: { text: string; 
         ctx.fillText(l, W / 2, y);
         y += size * 1.4;
       }
-      ctx.fillStyle = "#7f611b";
+      ctx.fillStyle = "#2c5d4d";
       ctx.font = `600 34px "Plus Jakarta Sans Variable", sans-serif`;
       ctx.fillText(reference, W / 2, y + 40);
       ctx.fillStyle = "#5f564a";
       ctx.font = `26px "Plus Jakarta Sans Variable", sans-serif`;
       ctx.fillText(site.name, W / 2, H - 90);
+      const mark = await new Promise<HTMLImageElement | null>((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = "/brand/abide-icon-96.png";
+      });
+      if (mark) ctx.drawImage(mark, W / 2 - 28, H - 186, 56, 56);
       const url = canvas.toDataURL("image/png");
       const a = document.createElement("a");
       a.href = url;

@@ -1,9 +1,11 @@
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { LogoMark } from "../Logo";
 
 export function AuthShell({ title, intro, children }: { title: string; intro?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="mx-auto max-w-md px-4 py-12">
       <div className="card p-6 sm:p-8">
+        <LogoMark className="mb-4 h-11 w-11" />
         <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
         {intro && <div className="mt-2 text-muted">{intro}</div>}
         <div className="mt-6">

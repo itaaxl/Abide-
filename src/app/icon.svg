@@ -1,1 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#f7f5f0"/><path d="M6.5 28V15c0-5.52 4.25-10 9.5-10s9.5 4.48 9.5 10v13Z" fill="#2c5d4d"/><rect x="14.7" y="10" width="2.6" height="13.5" rx="1.3" fill="#f7f5f0"/><rect x="11" y="14" width="10" height="2.6" rx="1.3" fill="#f7f5f0"/><rect x="5" y="27" width="22" height="2" rx="1" fill="#b07a2a"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+  <defs>
+    <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="87" y1="440" x2="280" y2="480">
+      <stop offset="0" stop-color="#e8c06e"/>
+      <stop offset=".6" stop-color="#e2b45e"/>
+      <stop offset="1" stop-color="#d29c3c"/>
+    </linearGradient>
+    <g id="h">
+      <path d="M87 154Q87 143 98 142C160 134 238 150 281 196V478C240 432 170 400 87 410Z" fill="#fcf2e1"/>
+      <path d="M87 428C152 418 232 436 280 490C232 468 160 456 87 470Z" fill="url(#g)"/>
+    </g>
+  </defs>
+  <rect width="600" height="600" rx="148" fill="#093924"/>
+  <use href="#h"/>
+  <use href="#h" transform="matrix(-1 0 0 1 599 0)"/>
+  <rect x="206" y="260" width="187" height="36" fill="#093924"/>
+</svg>
