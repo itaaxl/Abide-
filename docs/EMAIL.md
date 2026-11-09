@@ -24,3 +24,8 @@ Supabase's built-in sender only delivers to project team members (2 emails/hour)
 3. Then apply the templates (`npm run supabase:auth-config`), raise Supabase's email rate limit (Auth → Rate limits), and set `NEXT_PUBLIC_AUTH_EMAIL_CODES=true` in Vercel and redeploy.
 
 Templates live in `supabase/templates/`. They are also used by the local Supabase stack (`supabase/config.toml`), where `npm run test:e2e:email` tests every flow.
+
+## Current production status (2026-11-09)
+- Sending domain `axly.org` verified in Resend; Supabase SMTP connected through Resend's Supabase integration: `smtp.resend.com:465`, sender `Abide <no-reply@axly.org>`, Supabase email limit 25/hour.
+- Branded templates uploaded (`npm run supabase:auth-config`).
+- `NEXT_PUBLIC_AUTH_EMAIL_CODES=true` set in Vercel (production + preview).
