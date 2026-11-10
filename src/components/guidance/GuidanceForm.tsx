@@ -49,7 +49,7 @@ export function GuidanceForm({ edition, maxChars, canUse, signInHref }: { editio
   }
 
   function save() {
-    if (!result || result.kind === "crisis") return;
+    if (!result || result.kind === "crisis" || result.kind === "clarify") return;
     const kind = result.kind;
     start(async () => {
       const r = await saveGuidance({
@@ -131,7 +131,15 @@ export function GuidanceForm({ edition, maxChars, canUse, signInHref }: { editio
           </section>
         )}
 
-        {result && result.kind !== "crisis" && (
+        {result?.kind === "clarify" && (
+          <section role="status" className="card p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">A quick question</p>
+            <p className="mt-1 leading-relaxed">{result.opening}</p>
+            <p className="mt-2 text-sm text-muted">Add a little more detail above and press the button again.</p>
+          </section>
+        )}
+
+        {result && result.kind !== "crisis" && result.kind !== "clarify" && (
           <section className="space-y-6">
             {result.kind === "fallback" && (
               <p role="status" className="rounded-lg border border-rule bg-gold-soft/30 p-4 text-sm">

@@ -29,7 +29,13 @@ function deps(callModel: GuidanceDeps["callModel"], overrides: Partial<GuidanceD
   };
 }
 
-const ok = (output: unknown): ModelOutcome => ({ status: "ok", output, inputTokens: 100, outputTokens: 50, model: "test-model" });
+const ok = (output: object): ModelOutcome => ({
+  status: "ok",
+  output: { needs_clarification: false, clarifying_question: "", ...output },
+  inputTokens: 100,
+  outputTokens: 50,
+  model: "test-model",
+});
 
 describe("guidance workflow", () => {
   it("handles an ordinary struggle: offers relevant candidates and renders exact Scripture", async () => {
@@ -55,6 +61,17 @@ describe("guidance workflow", () => {
     // Exact WEB wording, from the dataset — not model text.
     expect(r.passages[0].text).toMatch(/^In nothing be anxious/);
     expect(r.passages[0].chapterHref).toBe("/bible/eng-web/PHP/4");
+  });
+
+  it("asks for clarification instead of returning unrelated verses", async () => {
+    const call = vi.fn(async () => ok({ needs_clarification: true, clarifying_question: "What is on your mind?", opening: "", passages: [], practical_steps: [], prayer: "", suggest_human_support: false }));
+    const vague = await runGuidance({ text: "hmm" }, deps(call));
+    expect(vague.kind).toBe("clarify");
+    expect(call).not.toHaveBeenCalled(); // too short: no AI cost
+    const r = await runGuidance({ text: "I feel anxious and worried about my exams" }, deps(call));
+    expect(r.kind).toBe("clarify");
+    expect(r.opening).toBe("What is on your mind?");
+    expect(r.passages).toHaveLength(0);
   });
 
   it("rejects invented references and duplicate ids", async () => {

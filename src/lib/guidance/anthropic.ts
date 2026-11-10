@@ -1,6 +1,7 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
+import type { z } from "zod";
 import type { AiConfig } from "./config";
 import type { ModelOutcome } from "./pipeline";
 import { guidanceOutputSchema } from "./schema";
@@ -11,7 +12,7 @@ let client: Anthropic | null = null;
  * Calls Claude with a strict JSON output schema. Request text is never logged;
  * only outcome categories and token counts leave this function.
  */
-export async function callAnthropic(cfg: AiConfig, system: string, user: string): Promise<ModelOutcome> {
+export async function callAnthropic(cfg: AiConfig, system: string, user: string, schema: z.ZodType = guidanceOutputSchema): Promise<ModelOutcome> {
   client ??= new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, timeout: cfg.timeoutMs, maxRetries: cfg.maxRetries });
   try {
     const response = await client.beta.messages.parse({
@@ -19,10 +20,12 @@ export async function callAnthropic(cfg: AiConfig, system: string, user: string)
       max_tokens: cfg.maxOutputTokens,
       system,
       messages: [{ role: "user", content: user }],
-      output_config: { effort: cfg.effort, format: zodOutputFormat(guidanceOutputSchema) },
+      output_config: { effort: cfg.effort, format: zodOutputFormat(schema) },
       // Server-side refusal fallback: if the primary model declines, the API
-      // re-runs the request on an appropriate model. Disable with AI_FALLBACKS=off.
-      ...(cfg.fallbacks ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const } : {}),
+      // re-runs the request on an appropriate model. Not offered for Haiku
+      // models (a refusal there simply falls back to curated content).
+      // Disable with AI_FALLBACKS=off.
+      ...(cfg.fallbacks && !cfg.model.startsWith("claude-haiku") ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const } : {}),
     });
     const usage = { inputTokens: response.usage.input_tokens, outputTokens: response.usage.output_tokens };
     if (response.stop_reason === "refusal") return { status: "refusal", ...usage };

@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { GenerateCards } from "@/components/flashcards/GenerateCards";
 import { VerseCarousel, type CarouselCard } from "@/components/flashcards/VerseCarousel";
+import { getEdition } from "@/lib/bible/provider";
+import { getTopics } from "@/lib/content";
+import { aiConfig } from "@/lib/guidance/config";
 import { getSessionUser } from "@/lib/auth";
 import { isIsoDate, ROTATION_EPOCH, todayFor } from "@/lib/daily";
 import { buildFace, type CardRow } from "@/lib/flashcards";
@@ -9,7 +13,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { buildVerseCards } from "@/lib/verse-cards";
 
-export const metadata: Metadata = { title: "Verses" };
+export const metadata: Metadata = { title: "Flashcards" };
 
 /**
  * Verse cards: today's verse first, then a curated selection. "Saved" shows
@@ -57,7 +61,22 @@ export default async function FlashcardsPage({ searchParams }: PageProps<"/flash
       passage: { book: v.book, chapter: v.chapter, verseStart: v.verseStart, verseEnd: v.verseEnd },
       note: v.fallbackNote,
     }));
-    body = <VerseCarousel cards={items} labels={labels} canSave={canSave} ariaLabel={c.carousel} />;
+    const [edition, topics] = await Promise.all([getEdition(prefs.edition), getTopics()]);
+    body = (
+      <>
+        {edition && (
+          <GenerateCards
+            edition={edition.id}
+            topics={topics.map((x) => ({ slug: x.slug, label: x.label }))}
+            books={edition.books.map((b) => ({ id: b.id, name: b.name, chapters: b.chapters.length }))}
+            canUse={canSave}
+            available={aiConfig().enabled && edition.license.aiProcessingAllowed}
+            labels={labels}
+          />
+        )}
+        <VerseCarousel cards={items} labels={labels} canSave={canSave} ariaLabel={c.carousel} />
+      </>
+    );
   } else if (!canSave) {
     body = (
       <div className="rounded-[28px] border border-rule bg-surface p-8 text-center">

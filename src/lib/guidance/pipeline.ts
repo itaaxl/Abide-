@@ -42,6 +42,8 @@ export async function runGuidance(input: GuidanceInput, deps: GuidanceDeps): Pro
     return { kind: "crisis", opening: [CRISIS_RESPONSE.title, ...CRISIS_RESPONSE.body].join("\n\n"), passages: [], practicalSteps: [], suggestHumanSupport: true };
   }
 
+  if (isTooVague(input.text, input.topic)) return clarify(VAGUE_QUESTION);
+
   const { candidates, topics } = await retrieveCandidates(input.text, input.topic, deps.topics, deps.search);
   const resolved = (
     await Promise.all(
@@ -68,7 +70,7 @@ export async function runGuidance(input: GuidanceInput, deps: GuidanceDeps): Pro
   };
 
   if (!deps.aiAvailable) return fallback("unconfigured");
-  if (resolved.length === 0) return fallback("no-matches");
+  if (resolved.length === 0) return clarify(NO_MATCH_QUESTION);
 
   const remaining = await deps.reserve();
   if (remaining === null) return fallback("quota");
@@ -80,9 +82,27 @@ export async function runGuidance(input: GuidanceInput, deps: GuidanceDeps): Pro
 
   const parsed = guidanceOutputSchema.safeParse(outcome.output);
   if (!parsed.success) return fallback("malformed", remaining);
+  if (parsed.data.needs_clarification)
+    return { ...clarify(clamp(parsed.data.clarifying_question, 300) || VAGUE_QUESTION), remainingToday: remaining, model: outcome.model };
   const validated = validateOutput(parsed.data, resolved, deps.edition);
   if (validated.passages.length === 0) return fallback("malformed", remaining);
   return { ...validated, remainingToday: remaining, model: outcome.model };
+}
+
+const VAGUE_QUESTION =
+  "Could you tell me a little more? For example, what is on your mind, or what situation you would like Scripture for (worry about work, grief, a decision, gratitude…).";
+const NO_MATCH_QUESTION =
+  "I couldn't find passages that clearly fit those words. Could you describe the situation or feeling in another way, or choose a topic below?";
+
+function clarify(question: string): GuidanceResult {
+  return { kind: "clarify", opening: question, passages: [], practicalSteps: [], suggestHumanSupport: false };
+}
+
+/** Requests too short to act on are answered with a question, at no AI cost. */
+export function isTooVague(text: string, topic?: string): boolean {
+  if (topic) return false;
+  const words = text.toLowerCase().match(/\p{L}{2,}/gu) ?? [];
+  return new Set(words).size < 2;
 }
 
 /** Keep only passages whose ids were actually offered; drop duplicates; clamp lengths. */
