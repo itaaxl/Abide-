@@ -23,7 +23,7 @@ export default function CreditsPage() {
       <h2>Editorial content</h2>
       <p>Daily reflections, topic notes, reading plans, and the beginner’s guide are original editorial text written for this site. They are not Scripture.</p>
       <h2>Software</h2>
-      <p>Built with Next.js, React, Tailwind CSS, Supabase, and the Anthropic SDK, each under its own open-source licence.</p>
+      <p>Built with Next.js, React, Tailwind CSS, Supabase, and the Groq and Anthropic SDKs, each under its own open-source licence.</p>
     </article>
   );
 }

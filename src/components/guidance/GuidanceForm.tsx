@@ -21,7 +21,7 @@ const TOPICS = [
 
 const FALLBACK_TEXT: Record<NonNullable<GuidanceResult["fallbackReason"]>, string> = {
   unconfigured: "AI suggestions aren’t available on this site right now.",
-  quota: "You’ve reached today’s limit for AI suggestions.",
+  quota: "The free AI allowance has been reached for now (your daily limit or the site’s shared free quota).",
   "provider-error": "The AI service didn’t respond just now.",
   refusal: "The AI service declined this request.",
   malformed: "The AI response couldn’t be verified, so we didn’t show it.",

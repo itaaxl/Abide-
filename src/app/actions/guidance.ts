@@ -9,7 +9,8 @@ import { mapReference } from "@/lib/bible/mapping";
 import { getEdition, getVerses } from "@/lib/bible/provider";
 import { searchBible } from "@/lib/bible/search";
 import { getTopics } from "@/lib/content";
-import { callAnthropic } from "@/lib/guidance/anthropic";
+import { callModel } from "@/lib/guidance/provider";
+import { guidanceOutputSchema } from "@/lib/guidance/schema";
 import { aiConfig } from "@/lib/guidance/config";
 import { runGuidance, type ModelOutcome } from "@/lib/guidance/pipeline";
 import type { GuidanceResult } from "@/lib/guidance/schema";
@@ -65,7 +66,7 @@ export async function requestGuidance(input: { text: string; topic?: string; ton
         if (error || data === -1) return null;
         return cfg.dailyLimit - Number(data);
       },
-      callModel: (system, user) => callAnthropic(cfg, system, user),
+      callModel: (system, user) => callModel(cfg, system, user, guidanceOutputSchema),
       recordResult: async (o: ModelOutcome) => {
         await admin!.rpc("record_ai_result", {
           p_user: userId,

@@ -9,7 +9,7 @@ import { guidanceOutputSchema, type GuidanceOutput, type GuidanceResult } from "
 
 export type ModelOutcome =
   | { status: "ok"; output: unknown; inputTokens: number; outputTokens: number; model: string }
-  | { status: "refusal" | "malformed" | "error" | "timeout"; inputTokens?: number; outputTokens?: number };
+  | { status: "refusal" | "malformed" | "error" | "timeout" | "quota"; inputTokens?: number; outputTokens?: number };
 
 export interface GuidanceDeps {
   topics: Topic[];
@@ -78,6 +78,7 @@ export async function runGuidance(input: GuidanceInput, deps: GuidanceDeps): Pro
   const outcome = await deps.callModel(SYSTEM_PROMPT, buildUserMessage(input.text, input.tone, resolved));
   await deps.recordResult(outcome);
   if (outcome.status === "refusal") return fallback("refusal", remaining);
+  if (outcome.status === "quota") return fallback("quota", remaining);
   if (outcome.status !== "ok") return fallback(outcome.status === "malformed" ? "malformed" : "provider-error", remaining);
 
   const parsed = guidanceOutputSchema.safeParse(outcome.output);

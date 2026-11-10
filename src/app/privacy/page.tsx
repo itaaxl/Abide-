@@ -40,9 +40,10 @@ export default function PrivacyPage() {
 
       <h2>Find Guidance (AI)</h2>
       <ul>
-        <li>When you use Find Guidance, the text you type and a short list of candidate Bible passages are sent to our AI provider, Anthropic, to choose passages and write short explanations.</li>
+        <li>When you use Find Guidance or Generate cards, the words you type (your request, topic, chapter, or goal) and a short list of candidate Bible passages are sent to our AI provider, Groq (servers in the United States), to choose passages and write short explanations or reflections.</li>
         <li>Your request is not stored by us unless you press “Save this guidance”. It is never written to our logs or analytics.</li>
-        <li>Anthropic processes the request under its commercial terms and data retention policies; we have not configured or verified zero data retention, so please don’t include names or sensitive details.</li>
+        <li>Groq states that it does not retain inference requests by default, but may temporarily log them for up to 30 days to investigate abuse unless Zero Data Retention is turned on. We use Groq’s free plan; please don’t include names or other sensitive details in your request.</li>
+        <li>For generated cards we keep only the chosen passage references and short reflections so repeat requests can reuse them; the words of a personal goal are not stored (only a one-way fingerprint tied to your account).</li>
         <li>Journal entries, notes, and other saved content are never sent to the AI provider.</li>
         <li>Limit: {cfg.dailyLimit} requests per person per day.</li>
       </ul>
@@ -60,7 +61,7 @@ export default function PrivacyPage() {
       <ul>
         <li>Hosting: Vercel (when deployed there).</li>
         <li>Database and authentication: Supabase.</li>
-        <li>AI suggestions: Anthropic (only for Find Guidance requests).</li>
+        <li>AI suggestions: Groq (only for Find Guidance and Generate cards requests).</li>
         <li>Email delivery for verification and password reset: the email provider configured in Supabase.</li>
       </ul>
       <h2>Changes</h2>

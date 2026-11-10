@@ -20,7 +20,7 @@ import {
   type CardsInput,
   type GeneratedCard,
 } from "@/lib/flashcards-ai";
-import { callAnthropic } from "@/lib/guidance/anthropic";
+import { callModel } from "@/lib/guidance/provider";
 import { aiConfig } from "@/lib/guidance/config";
 import { detectCrisis } from "@/lib/guidance/safety";
 import { consume } from "@/lib/rate-limit";
@@ -87,8 +87,10 @@ export async function generateCards(raw: CardsInput & { edition?: string }): Pro
   if (qErr || used === -1) return { ok: false, error: "You’ve reached today’s limit for AI requests. Please try again tomorrow." };
   const remainingToday = cfg.dailyLimit - Number(used);
 
-  const outcome = await callAnthropic(cfg, CARDS_SYSTEM_PROMPT, buildCardsMessage(describeRequest(input, edition), candidates), cardsOutputSchema);
+  const outcome = await callModel(cfg, CARDS_SYSTEM_PROMPT, buildCardsMessage(describeRequest(input, edition), candidates), cardsOutputSchema);
   await admin.rpc("record_ai_result", { p_user: userId, p_day: day, p_in: outcome.inputTokens ?? 0, p_out: outcome.outputTokens ?? 0, p_failed: outcome.status !== "ok" });
+  if (outcome.status === "quota")
+    return { ok: false, error: "The free AI allowance for this site is used up for now. Please try again later — the curated verse cards below are always available." };
   if (outcome.status !== "ok") return { ok: false, error: "The AI service couldn’t create cards just now. Please try again later." };
 
   const out = cardsOutputSchema.safeParse(outcome.output);

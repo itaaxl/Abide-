@@ -22,7 +22,7 @@ export default async function GuidancePage() {
         <summary className="cursor-pointer">How this works and what is shared</summary>
         <ul className="mt-2 list-disc space-y-1 ps-6">
           <li>First we search our verified Bible text and curated topic lists for candidate passages.</li>
-          <li>If AI is available, your words and those candidates are sent to our AI provider (Anthropic), which chooses among them and writes short explanations. It cannot add other references.</li>
+          <li>If AI is available, your words and those candidates are sent to our AI provider (Groq, free plan, US servers), which chooses among them and writes short explanations. It cannot add other references.</li>
           <li>Verse text is always shown from our verified edition, never from AI wording.</li>
           <li>Your request is not stored unless you choose “Save”. It is never added to analytics or logs.</li>
           <li>If AI is unavailable, you’ll see passages from curated topic lists instead, clearly labelled.</li>
