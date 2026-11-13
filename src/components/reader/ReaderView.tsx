@@ -10,6 +10,7 @@ import { Reader } from "./Reader";
 import { ReaderToolbar } from "./ReaderToolbar";
 import { ParallelColumn } from "./ParallelColumn";
 import { FocusMode } from "./FocusMode";
+import { OfflineChapterToggle } from "../pwa/OfflineChapterToggle";
 
 interface Props {
   edition: EditionMeta;
@@ -79,7 +80,8 @@ export async function ReaderView({ edition, book, chapter, target = null, parall
       />
 
       <header className="relative mb-8 text-center">
-        <div className="mb-3 flex justify-end">
+        <div className="mb-3 flex flex-wrap items-center justify-end gap-2">
+          <OfflineChapterToggle path={`/bible/${edition.id}/${book}/${chapter}`} label={`${bookMeta.name} ${chapter} · ${edition.abbreviation}`} />
           <FocusMode label={t.reader.focus} exitLabel={t.reader.exitFocus} />
         </div>
         <p className="eyebrow reader-secondary">{edition.name}</p>

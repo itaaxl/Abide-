@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BookBrowser } from "@/components/BookBrowser";
 import { ContinueReading } from "@/components/ContinueReading";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { ReaderView } from "@/components/reader/ReaderView";
 import { SearchBar } from "@/components/SearchBar";
 import { TimezoneSync } from "@/components/TimezoneSync";
@@ -30,11 +31,14 @@ export default async function Home() {
               {t.reader.continue}: {edition.books.find((b) => b.id === pos.book)?.name} {pos.chapter}
             </Link>
           ) : (
-            <ContinueReading label={t.reader.continue} fallbackLabel={t.reader.startHere} fallbackHref={`/bible/${edition.id}/${start}/1`} />
+            <ContinueReading label={t.reader.continue} fallbackLabel={t.home.startReading} fallbackHref={`/bible/${edition.id}/${start}/1`} />
           )}
           <Link href="/flashcards" className="btn">
-            <span aria-hidden="true" className="text-warm">✦</span> {t.cards.today}
+            <span aria-hidden="true" className="text-warm">✦</span> {t.home.exploreCards}
           </Link>
+        </div>
+        <div className="mt-3">
+          <InstallPrompt />
         </div>
       </section>
 
@@ -42,11 +46,20 @@ export default async function Home() {
         <ReaderView edition={edition} book={current.book} chapter={current.chapter} headingLevel="h2" />
       </div>
 
-      <section className="mx-auto max-w-5xl px-4 py-10" aria-labelledby="all-books">
-        <h2 id="all-books" className="mb-5 text-xl font-bold tracking-tight">
-          {t.reader.books} <span className="font-normal text-muted">· {edition.name}</span>
-        </h2>
-        <BookBrowser edition={edition} locale={locale} />
+      <section className="mx-auto max-w-5xl px-4 pb-10" aria-label={t.home.browseBooks}>
+        <details className="group rounded-2xl border border-rule bg-surface">
+          <summary className="pressable flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-5 py-4 [&::-webkit-details-marker]:hidden">
+            <span className="text-lg font-bold tracking-tight">
+              {t.home.browseBooks} <span className="text-sm font-normal text-muted">· {edition.name}</span>
+            </span>
+            <svg className="shrink-0 transition-transform group-open:rotate-180" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </summary>
+          <div className="border-t border-rule px-5 py-6">
+            <BookBrowser edition={edition} locale={locale} />
+          </div>
+        </details>
       </section>
     </>
   );

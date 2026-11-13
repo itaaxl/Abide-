@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { GuidanceForm } from "@/components/guidance/GuidanceForm";
 import { getSessionUser } from "@/lib/auth";
+import { getTopics } from "@/lib/content";
 import { aiConfig } from "@/lib/guidance/config";
 import { getPrefs } from "@/lib/request";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -9,7 +10,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/config";
 export const metadata: Metadata = { title: "Find Guidance", robots: { index: true } };
 
 export default async function GuidancePage() {
-  const [user, prefs] = await Promise.all([getSessionUser(), getPrefs()]);
+  const [user, prefs, topics] = await Promise.all([getSessionUser(), getPrefs(), getTopics()]);
   const cfg = aiConfig();
   const canUse = Boolean(user?.emailVerified);
   return (
@@ -32,12 +33,25 @@ export default async function GuidancePage() {
       {!isSupabaseConfigured() ? (
         <p className="card mt-6 p-4 text-sm">Personalized guidance needs accounts, which aren’t configured on this deployment yet. You can browse curated passages by topic on the <Link href="/discover" className="underline">Discover</Link> page.</p>
       ) : !canUse ? (
-        <p className="card mt-6 p-4 text-sm">
-          Personalized guidance is available to signed-in members with a verified email, so we can enforce fair daily limits. Without an account, explore curated passages on <Link href="/discover" className="underline">Discover</Link>.
-        </p>
+        <div className="card mt-6 p-4 text-sm">
+          <p>
+            <strong>Personalized guidance requires signing in</strong> (with a verified email), so we can keep fair daily limits. You can type your
+            request below first — it is kept privately in this browser tab while you sign in, and you choose when to send it.
+          </p>
+          <p className="mt-3 text-muted">Or open passages chosen by people, no account needed:</p>
+          <ul className="mt-2 flex flex-wrap gap-1.5">
+            {topics.map((tp) => (
+              <li key={tp.slug}>
+                <Link href={`/discover/${tp.slug}`} className="btn btn-sm">
+                  {tp.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : null}
       <div className="mt-6">
-        <GuidanceForm edition={prefs.edition} maxChars={cfg.maxInputChars} canUse={canUse} signInHref="/auth/sign-in?next=/guidance" />
+        <GuidanceForm edition={prefs.edition} maxChars={cfg.maxInputChars} canUse={canUse} userId={user?.id} signInHref="/auth/sign-in?next=/guidance" />
       </div>
       {canUse && (
         <p className="mt-8 text-sm">

@@ -11,6 +11,8 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Suspense } from "react";
 import { NavProgress } from "@/components/NavProgress";
 import { BottomNav } from "@/components/BottomNav";
+import { NetworkStatus } from "@/components/pwa/NetworkStatus";
+import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { getDictionary, getPrefs } from "@/lib/request";
 
 export const metadata: Metadata = {
@@ -36,11 +38,13 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <html lang={locale} dir={dir} data-theme={prefs.theme}>
       <body className="antialiased">
         <SiteHeader />
+        <NetworkStatus />
         <main id="main" tabIndex={-1} className="outline-none">
           {children}
         </main>
         <SiteFooter />
         <BottomNav t={t.tabs} />
+        <ServiceWorkerRegister />
         <Suspense fallback={null}>
           <NavProgress />
         </Suspense>

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { addPassageCard } from "@/app/actions/flashcards";
 import { copyText } from "@/lib/clipboard";
+import { site } from "@/config/site";
+import { DownloadImageButton, type DownloadImageLabels } from "../DownloadImageButton";
 import { LogoMark } from "../Logo";
 
 export interface CarouselCard {
@@ -14,6 +16,8 @@ export interface CarouselCard {
   reference: string;
   editionId?: string;
   editionAbbr?: string;
+  /** Full translation name, shown on downloaded images. */
+  editionName?: string;
   direction: "ltr" | "rtl";
   language?: string;
   reflection?: string;
@@ -39,6 +43,10 @@ interface Labels {
   copyFailed: string;
   of: string;
   yourCard: string;
+  /** Label for AI-written reflections (generated cards). */
+  aiReflection?: string;
+  /** Labels for "Download image"; omit to hide the button. */
+  image?: DownloadImageLabels;
 }
 
 function verseSize(text: string) {
@@ -230,6 +238,20 @@ function VerseCard({ card, labels, canSave, showSave }: { card: CarouselCard; la
               <Icon d="M12 3v12M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5" />
               {labels.share}
             </button>
+          )}
+          {labels.image && (
+            <DownloadImageButton
+              labels={labels.image}
+              verse={{
+                text: card.text,
+                reference: card.reference,
+                translation: card.editionName ? `${card.editionName} (${card.editionAbbr})` : (card.editionAbbr ?? ""),
+                direction: card.direction,
+                lang: card.language,
+                reflection: card.reflection ? { label: labels.reflection, text: card.reflection } : undefined,
+                siteName: site.name,
+              }}
+            />
           )}
           {card.chapterHref && (
             <Link href={card.chapterHref} className="btn btn-sm btn-ghost">

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { requestGuidance, saveGuidance } from "@/app/actions/guidance";
 import type { GuidanceResult } from "@/lib/guidance/schema";
 import { PassageActions } from "../PassageActions";
@@ -28,10 +28,91 @@ const FALLBACK_TEXT: Record<NonNullable<GuidanceResult["fallbackReason"]>, strin
   "no-matches": "We couldn’t find closely matching passages.",
 };
 
-export function GuidanceForm({ edition, maxChars, canUse, signInHref }: { edition: string; maxChars: number; canUse: boolean; signInHref: string }) {
+/**
+ * A guest's unsent request survives sign-in in this tab's sessionStorage only
+ * (never the URL, cookies, or analytics). It is restored for review — never
+ * sent automatically — and cleared on submit, discard, tab close, after 30
+ * minutes, or when a different account signs in on this device.
+ */
+const DRAFT_KEY = "abide:guidance-draft";
+const DRAFT_TTL = 30 * 60 * 1000;
+interface Draft {
+  text: string;
+  topic?: string;
+  tone?: string;
+  at: number;
+  /** Account that first restored it; any other account discards it. */
+  owner?: string;
+}
+function readDraft(): Draft | null {
+  try {
+    const d = JSON.parse(sessionStorage.getItem(DRAFT_KEY) ?? "null") as Draft | null;
+    if (!d || typeof d.text !== "string" || Date.now() - d.at > DRAFT_TTL) return clearDraft(), null;
+    return d;
+  } catch {
+    return null;
+  }
+}
+function writeDraft(d: Draft) {
+  try {
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+  } catch {
+    /* storage unavailable: nothing is kept */
+  }
+}
+function clearDraft() {
+  try {
+    sessionStorage.removeItem(DRAFT_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+export function GuidanceForm({
+  edition,
+  maxChars,
+  canUse,
+  signInHref,
+  userId,
+}: {
+  edition: string;
+  maxChars: number;
+  canUse: boolean;
+  signInHref: string;
+  userId?: string;
+}) {
   const [text, setText] = useState("");
   const [topic, setTopic] = useState<string | undefined>();
   const [tone, setTone] = useState<string | undefined>();
+  const [restored, setRestored] = useState(false);
+
+  // Offer a kept request back: after sign-in for that person only, or to the
+  // guest who returns without signing in. A draft already claimed by an
+  // account is discarded once nobody (or someone else) is signed in.
+  useEffect(() => {
+    const d = readDraft();
+    if (!d) return;
+    if (d.owner && d.owner !== (canUse ? userId : undefined)) return clearDraft();
+    if (canUse && userId) writeDraft({ ...d, owner: userId });
+    /* eslint-disable react-hooks/set-state-in-effect -- restoring browser-only storage after hydration */
+    setText(d.text.slice(0, maxChars));
+    setTopic(d.topic);
+    setTone(d.tone);
+    setRestored(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [canUse, userId, maxChars]);
+
+  function keepDraftForSignIn() {
+    if (text.trim()) writeDraft({ text: text.slice(0, maxChars), topic, tone, at: Date.now() });
+  }
+
+  function discardDraft() {
+    clearDraft();
+    setText("");
+    setTopic(undefined);
+    setTone(undefined);
+    setRestored(false);
+  }
   const [result, setResult] = useState<GuidanceResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
@@ -41,6 +122,8 @@ export function GuidanceForm({ edition, maxChars, canUse, signInHref }: { editio
     e.preventDefault();
     setError(null);
     setSaved(null);
+    clearDraft();
+    setRestored(false);
     start(async () => {
       const r = await requestGuidance({ text, topic, tone, edition });
       if (!r.ok) setError(r.error);
@@ -70,6 +153,14 @@ export function GuidanceForm({ edition, maxChars, canUse, signInHref }: { editio
 
   return (
     <div>
+      {restored && (
+        <div role="status" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gold/40 bg-gold-soft/40 p-4 text-sm">
+          <p>We kept the request you started before signing in. Review it, then press “Find passages” when you’re ready.</p>
+          <button type="button" className="btn btn-sm" onClick={discardDraft}>
+            Discard
+          </button>
+        </div>
+      )}
       <form onSubmit={submit} className="card space-y-4 p-6">
         <fieldset>
           <legend className="label">Choose a topic (optional)</legend>
@@ -113,7 +204,9 @@ export function GuidanceForm({ edition, maxChars, canUse, signInHref }: { editio
               {pending ? "Finding passages…" : "Find passages"}
             </button>
           ) : (
-            <Link href={signInHref} className="btn btn-primary">Sign in to continue</Link>
+            <Link href={signInHref} className="btn btn-primary" onClick={keepDraftForSignIn}>
+              Sign in to continue
+            </Link>
           )}
         </div>
         {error && <p role="alert" className="text-sm text-danger">{error}</p>}

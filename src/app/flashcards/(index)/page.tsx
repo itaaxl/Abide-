@@ -38,6 +38,8 @@ export default async function FlashcardsPage({ searchParams }: PageProps<"/flash
     copyFailed: c.copyFailed,
     of: c.of,
     yourCard: c.yourCard,
+    aiReflection: c.aiReflection,
+    image: { downloadImage: c.downloadImage, square: c.square, story: c.story, imageFailed: c.imageFailed, excerpt: c.excerpt },
   };
 
   let body: React.ReactNode;
@@ -53,6 +55,7 @@ export default async function FlashcardsPage({ searchParams }: PageProps<"/flash
       reference: v.reference,
       editionId: v.editionId,
       editionAbbr: v.editionAbbr,
+      editionName: v.editionName,
       direction: v.direction,
       language: v.language,
       reflection: v.reflection ?? undefined,

@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ScriptureQuote } from "@/components/ScriptureQuote";
-import { ShareCardButton } from "@/components/ShareCardButton";
+import { DownloadImageButton } from "@/components/DownloadImageButton";
+import { getDictionary } from "@/lib/request";
 import { site } from "@/config/site";
 import { resolvePassage } from "@/lib/bible/passage";
 
@@ -34,6 +35,8 @@ export async function generateMetadata({ params }: P): Promise<Metadata> {
 export default async function PublicPassage({ params }: P) {
   const p = await load(params);
   if (!p || p.verses.length === 0 || p.verses.length > 60) notFound();
+  const { t } = await getDictionary();
+  const c = t.cards;
   return (
     <div className="mx-auto max-w-2xl px-4 py-14">
       <article className="card p-8 sm:p-10">
@@ -45,7 +48,18 @@ export default async function PublicPassage({ params }: P) {
         <Link href={p.href} className="btn btn-primary">
           Read the full chapter
         </Link>
-        <ShareCardButton text={p.text} reference={`${p.label} · ${p.edition.abbreviation}`} direction={p.edition.direction} />
+        <DownloadImageButton
+          className="btn"
+          labels={{ downloadImage: c.downloadImage, square: c.square, story: c.story, imageFailed: c.imageFailed, excerpt: c.excerpt }}
+          verse={{
+            text: p.text,
+            reference: p.label,
+            translation: `${p.edition.name} (${p.edition.abbreviation})`,
+            direction: p.edition.direction,
+            lang: p.edition.language,
+            siteName: site.name,
+          }}
+        />
       </div>
     </div>
   );

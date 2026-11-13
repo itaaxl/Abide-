@@ -154,7 +154,7 @@ export function GenerateCards({ edition, topics, books, canUse, available, label
               Not saved yet — tap <strong>Save</strong> on the cards you want to keep. Verse text comes from the Bible edition; the reflection is AI-written and may be imperfect.
               {result.cached ? " (Reused from an earlier request.)" : result.remainingToday !== undefined ? ` ${result.remainingToday} AI requests left today.` : ""}
             </p>
-            <VerseCarousel cards={cards} labels={{ ...labels, reflection: "AI reflection" }} canSave={canUse} ariaLabel="Generated cards" />
+            <VerseCarousel cards={cards} labels={{ ...labels, reflection: labels.aiReflection ?? "AI reflection" }} canSave={canUse} ariaLabel="Generated cards" />
           </div>
         )}
       </div>

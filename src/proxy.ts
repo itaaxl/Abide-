@@ -28,6 +28,8 @@ export async function proxy(request: NextRequest) {
     // Only explicitly authorized embeds (see src/content/media.ts).
     "frame-src https://www.youtube-nocookie.com",
     "object-src 'none'",
+    "worker-src 'self'",
+    "manifest-src 'self'",
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",
