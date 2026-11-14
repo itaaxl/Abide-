@@ -10,7 +10,7 @@ export default function TermsPage() {
       <p className="rounded-lg border border-rule bg-gold-soft/30 p-3 text-sm">
         Draft — operator details and governing law must be completed and reviewed by the operator before launch.
       </p>
-      <p>Operator: {site.operator.name} · Contact: {site.operator.contactEmail} · Governing jurisdiction: {site.operator.jurisdiction}</p>
+      <p>Operator: {site.operator.name} · Contact: {site.operator.contactEmail} · Operator location: {site.operator.location}</p>
       <h2>Using the site</h2>
       <p>{site.name} is offered free of charge for personal reading and study. Please use it lawfully and don’t attempt to access other people’s data or disrupt the service.</p>
       <h2>Scripture and content</h2>

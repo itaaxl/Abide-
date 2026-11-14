@@ -15,12 +15,13 @@ export default function PrivacyPage() {
       <h1>Privacy policy</h1>
       {operatorIncomplete && (
         <p className="rounded-lg border border-rule bg-gold-soft/30 p-3 text-sm">
-          Draft — the operator’s name, contact email, and jurisdiction have not been provided yet. This page describes how the site actually
+          Draft — the operator’s name, contact email, and location have not been provided yet. This page describes how the site actually
           behaves, but it is not final until those details are added and the operator has reviewed it.
         </p>
       )}
       <p>
-        {site.name} is operated by {site.operator.name}. Contact: {site.operator.contactEmail}. Jurisdiction: {site.operator.jurisdiction}.
+        {site.name} is operated by {site.operator.name}, an individual based in {site.operator.location}. For privacy questions or requests, contact{" "}
+        <a href={`mailto:${site.operator.contactEmail}`}>{site.operator.contactEmail}</a>.
       </p>
 
       <h2>Without an account</h2>

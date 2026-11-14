@@ -22,11 +22,11 @@ export const site = {
   defaultEdition: "eng-web",
   /** Where a first-time reader is invited to start. */
   startingPoint: { book: "JHN", chapter: 1 },
-  /** Operator details for legal pages — fill these in before launch. */
+  /** Operator details for legal pages (an individual, not a registered company). */
   operator: {
-    name: "[Operator name — to be provided]",
-    contactEmail: "[Contact email — to be provided]",
-    jurisdiction: "[Governing jurisdiction — to be provided]",
+    name: "Axl Gedeon",
+    contactEmail: "axl@gedeon.org",
+    location: "Lebanon",
   },
 } as const;
 
