@@ -1,3 +1,4 @@
+import { EnglishOnlyNotice } from "@/components/EnglishOnlyNotice";
 import type { Metadata } from "next";
 import { site } from "@/config/site";
 
@@ -5,7 +6,8 @@ export const metadata: Metadata = { title: "Terms of use" };
 
 export default function TermsPage() {
   return (
-    <article className="prose-page mx-auto max-w-2xl px-4 py-12">
+    <article className="prose-page mx-auto max-w-2xl px-4 py-12" lang="en" dir="ltr">
+      <EnglishOnlyNotice />
       <h1>Terms of use</h1>
       <p className="rounded-lg border border-rule bg-gold-soft/30 p-3 text-sm">
         Draft — operator details and governing law must be completed and reviewed by the operator before launch.

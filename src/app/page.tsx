@@ -2,6 +2,8 @@ import Link from "next/link";
 import { BookBrowser } from "@/components/BookBrowser";
 import { ContinueReading } from "@/components/ContinueReading";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { DailyReminder } from "@/components/DailyReminder";
+import { WeekSummary } from "@/components/WeekSummary";
 import { ReaderView } from "@/components/reader/ReaderView";
 import { SearchBar } from "@/components/SearchBar";
 import { TimezoneSync } from "@/components/TimezoneSync";
@@ -37,8 +39,12 @@ export default async function Home() {
             <span aria-hidden="true" className="text-warm">✦</span> {t.home.exploreCards}
           </Link>
         </div>
-        <div className="mt-3">
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <DailyReminder />
           <InstallPrompt />
+        </div>
+        <div className="mt-4">
+          <WeekSummary />
         </div>
       </section>
 
@@ -57,7 +63,7 @@ export default async function Home() {
             </svg>
           </summary>
           <div className="border-t border-rule px-5 py-6">
-            <BookBrowser edition={edition} locale={locale} />
+            <BookBrowser edition={edition} locale={locale} showDeuterocanon={prefs.deuterocanon} />
           </div>
         </details>
       </section>

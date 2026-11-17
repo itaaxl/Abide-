@@ -10,11 +10,28 @@ export interface Topic {
   description: string;
   keywords: string[];
   passages: { ref: string; note: string }[];
+  /** French/Arabic label, description, notes (same order as passages) and search keywords. */
+  i18n?: Partial<Record<"fr" | "ar", { label: string; description: string; notes?: string[]; keywords?: string[] }>>;
+}
+
+export function topicText(t: Topic, locale: "en" | "fr" | "ar") {
+  const x = locale === "en" ? undefined : t.i18n?.[locale];
+  return {
+    label: x?.label ?? t.label,
+    description: x?.description ?? t.description,
+    note: (i: number) => x?.notes?.[i] ?? t.passages[i]?.note ?? "",
+    /** True when the note is still in English (marked lang="en"). */
+    noteIsEnglish: (i: number) => locale !== "en" && !x?.notes?.[i],
+  };
 }
 
 export const TOPICS: Topic[] = [
   {
     slug: "anxiety",
+    i18n: {
+      fr: { label: "Anxiété et inquiétude", description: "Des passages pour remettre ses soucis à Dieu et trouver la paix.", keywords: ["anxi", "inquiet", "inquiète", "stress", "angoiss", "peur", "souci", "soucis", "panique", "dépassé"] },
+      ar: { label: "القلق والهمّ", description: "مقاطع عن إلقاء الهموم على الله ونوال السلام.", keywords: ["قلق", "هم", "هموم", "توتر", "خوف", "خائف", "ضغط", "اضطراب"] },
+    },
     label: "Anxiety and worry",
     description: "Passages about bringing worries to God and finding peace.",
     keywords: ["anxious", "anxiety", "worry", "worried", "stress", "stressed", "panic", "nervous", "overwhelmed", "afraid"],
@@ -29,6 +46,10 @@ export const TOPICS: Topic[] = [
   },
   {
     slug: "grief",
+    i18n: {
+      fr: { label: "Deuil et perte", description: "Réconfort et lamentation sincère dans les temps de perte.", keywords: ["deuil", "décès", "mort", "perdu", "perte", "chagrin", "pleure", "tristesse"] },
+      ar: { label: "الحزن والفقد", description: "تعزية ورثاء صادق في أوقات الفقد.", keywords: ["حزن", "حزين", "فقد", "موت", "توفي", "وفاة", "بكاء", "فقدان"] },
+    },
     label: "Grief and loss",
     description: "Comfort and honest lament for seasons of loss.",
     keywords: ["grief", "grieving", "loss", "died", "death", "mourning", "funeral", "lost", "miss"],
@@ -43,6 +64,10 @@ export const TOPICS: Topic[] = [
   },
   {
     slug: "anger",
+    i18n: {
+      fr: { label: "Colère", description: "Ralentir, reconnaître sa colère et se réconcilier.", keywords: ["colère", "fâché", "énervé", "rage", "furieux", "irrité"] },
+      ar: { label: "الغضب", description: "التمهّل والغضب الصادق والمصالحة.", keywords: ["غضب", "غاضب", "غيظ", "عصبي", "انفعال"] },
+    },
     label: "Anger",
     description: "Passages about slowing down, honest anger, and reconciliation.",
     keywords: ["anger", "angry", "rage", "furious", "mad", "irritated", "resentment", "bitter"],
@@ -56,6 +81,10 @@ export const TOPICS: Topic[] = [
   },
   {
     slug: "forgiveness",
+    i18n: {
+      fr: { label: "Pardon", description: "Recevoir le pardon de Dieu et apprendre à pardonner.", keywords: ["pardon", "pardonner", "culpabilité", "coupable", "honte", "rancune"] },
+      ar: { label: "الغفران", description: "قبول غفران الله وتعلّم الغفران للآخرين.", keywords: ["غفران", "مغفرة", "سامح", "أسامح", "ذنب", "خطية", "خجل", "ضغينة"] },
+    },
     label: "Forgiveness",
     description: "Receiving God’s forgiveness and learning to forgive others.",
     keywords: ["forgive", "forgiveness", "forgiven", "guilt", "guilty", "shame", "regret", "sin", "mistake"],
@@ -70,6 +99,10 @@ export const TOPICS: Topic[] = [
   },
   {
     slug: "motivation",
+    i18n: {
+      fr: { label: "Motivation et persévérance", description: "Un encouragement à continuer quand on est las.", keywords: ["motivation", "fatigué", "épuisé", "abandonner", "persévér", "découragé", "las"] },
+      ar: { label: "الهمّة والمثابرة", description: "تشجيع على المواصلة حين تتعب.", keywords: ["تعب", "متعب", "مرهق", "استسلام", "يأس", "إحباط", "مثابرة", "همة"] },
+    },
     label: "Motivation and perseverance",
     description: "Encouragement to keep going when you feel weary.",
     keywords: ["motivation", "motivated", "tired", "lazy", "give up", "quit", "weary", "persevere", "discipline", "goals"],
@@ -83,6 +116,10 @@ export const TOPICS: Topic[] = [
   },
   {
     slug: "gratitude",
+    i18n: {
+      fr: { label: "Gratitude", description: "Pratiquer la reconnaissance en toute saison.", keywords: ["merci", "gratitude", "reconnaissan", "remercier", "bénédiction"] },
+      ar: { label: "الشكر", description: "ممارسة الشكر في كل الأوقات.", keywords: ["شكر", "امتنان", "نعمة", "بركة", "أشكر"] },
+    },
     label: "Gratitude",
     description: "Practising thankfulness in every season.",
     keywords: ["grateful", "gratitude", "thankful", "thanks", "thanksgiving", "blessed", "praise"],
@@ -96,6 +133,10 @@ export const TOPICS: Topic[] = [
   },
   {
     slug: "relationships",
+    i18n: {
+      fr: { label: "Relations", description: "Amour, patience et réconciliation avec les autres.", keywords: ["relation", "mari", "femme", "ami", "amitié", "famille", "conflit", "couple", "parents", "enfant"] },
+      ar: { label: "العلاقات", description: "المحبة والصبر والمصالحة مع الآخرين.", keywords: ["علاقة", "زوج", "زوجة", "صديق", "عائلة", "خلاف", "أهل", "أولاد", "زواج"] },
+    },
     label: "Relationships",
     description: "Love, patience, and reconciliation with others.",
     keywords: ["relationship", "marriage", "friend", "friendship", "family", "parents", "spouse", "conflict", "lonely", "loneliness", "husband", "wife"],
@@ -110,6 +151,10 @@ export const TOPICS: Topic[] = [
   },
   {
     slug: "closer-to-god",
+    i18n: {
+      fr: { label: "Se rapprocher de Dieu", description: "Chercher Dieu par la prière, l’Écriture et la communion.", keywords: ["prière", "prier", "proche de dieu", "foi", "spirituel", "bible"] },
+      ar: { label: "الاقتراب من الله", description: "طلب الله بالصلاة والكلمة والثبات فيه.", keywords: ["صلاة", "أصلي", "الاقتراب", "إيمان", "روحي", "الكتاب"] },
+    },
     label: "Growing closer to God",
     description: "Seeking God through prayer, Scripture, and abiding.",
     keywords: ["closer", "god", "faith", "pray", "prayer", "relationship with god", "spiritual", "seek", "distant", "dry"],
@@ -124,6 +169,10 @@ export const TOPICS: Topic[] = [
   },
   {
     slug: "hope",
+    i18n: {
+      fr: { label: "Espérance", description: "Une espérance fondée sur la fidélité de Dieu.", keywords: ["espoir", "espérance", "avenir", "désespoir", "attendre"] },
+      ar: { label: "الرجاء", description: "رجاء مؤسّس على أمانة الله.", keywords: ["رجاء", "أمل", "مستقبل", "يأس", "انتظار"] },
+    },
     label: "Hope",
     description: "Hope rooted in God’s faithfulness.",
     keywords: ["hope", "hopeless", "future", "despair", "discouraged", "waiting"],
@@ -137,6 +186,10 @@ export const TOPICS: Topic[] = [
   },
   {
     slug: "peace",
+    i18n: {
+      fr: { label: "Paix", description: "La paix que Dieu donne et l’appel à faire la paix.", keywords: ["paix", "calme", "sérénité", "agitation", "repos"] },
+      ar: { label: "السلام", description: "السلام الذي يعطيه الله والدعوة لصنع السلام.", keywords: ["سلام", "هدوء", "طمأنينة", "راحة", "اضطراب"] },
+    },
     label: "Peace",
     description: "The peace God gives and the call to make peace.",
     keywords: ["peace", "calm", "rest", "quiet", "still", "restless"],
@@ -150,6 +203,10 @@ export const TOPICS: Topic[] = [
   },
   {
     slug: "love",
+    i18n: {
+      fr: { label: "Amour", description: "L’amour de Dieu et l’appel à aimer les autres.", keywords: ["amour", "aimer", "aimé", "seul", "solitude", "rejeté"] },
+      ar: { label: "المحبة", description: "محبة الله والدعوة إلى محبة الآخرين.", keywords: ["محبة", "حب", "أحب", "وحيد", "وحدة", "مرفوض"] },
+    },
     label: "Love",
     description: "God’s love and the call to love others.",
     keywords: ["love", "loved", "unloved", "loving"],
@@ -163,6 +220,10 @@ export const TOPICS: Topic[] = [
   },
   {
     slug: "wisdom",
+    i18n: {
+      fr: { label: "Sagesse et décisions", description: "Chercher la direction de Dieu dans ses choix.", keywords: ["décision", "choix", "choisir", "sagesse", "direction", "travail", "études"] },
+      ar: { label: "الحكمة والقرارات", description: "طلب إرشاد الله في الاختيارات.", keywords: ["قرار", "اختيار", "حكمة", "إرشاد", "عمل", "دراسة", "مستقبل"] },
+    },
     label: "Wisdom and decisions",
     description: "Seeking God’s guidance in choices.",
     keywords: ["wisdom", "decision", "choose", "choice", "direction", "career", "job", "confused", "guidance", "unsure"],
@@ -176,6 +237,10 @@ export const TOPICS: Topic[] = [
   },
   {
     slug: "courage",
+    i18n: {
+      fr: { label: "Courage et peur", description: "Affronter la peur avec la promesse de la présence de Dieu.", keywords: ["courage", "peur", "effrayé", "crainte", "nouveau départ"] },
+      ar: { label: "الشجاعة والخوف", description: "مواجهة الخوف بوعد حضور الله.", keywords: ["شجاعة", "خوف", "خائف", "رعب", "جرأة"] },
+    },
     label: "Courage and fear",
     description: "Facing fear with the promise of God’s presence.",
     keywords: ["fear", "afraid", "scared", "courage", "brave", "frightened", "terrified"],
@@ -189,6 +254,10 @@ export const TOPICS: Topic[] = [
   },
   {
     slug: "doubt",
+    i18n: {
+      fr: { label: "Doute et questions", description: "Des questions sincères vécues dans la foi.", keywords: ["doute", "douter", "question", "croire", "incrédul"] },
+      ar: { label: "الشك والأسئلة", description: "أسئلة صادقة داخل الإيمان.", keywords: ["شك", "أشك", "سؤال", "أسئلة", "إيمان", "أؤمن"] },
+    },
     label: "Doubt and questions",
     description: "Honest questions held within faith.",
     keywords: ["doubt", "doubts", "question", "questions", "unsure", "believe", "unbelief", "struggling to believe"],
@@ -202,6 +271,10 @@ export const TOPICS: Topic[] = [
   },
   {
     slug: "strength",
+    i18n: {
+      fr: { label: "Force dans la faiblesse", description: "La force de Dieu quand nous sommes faibles.", keywords: ["faible", "faiblesse", "force", "maladie", "malade", "épuis"] },
+      ar: { label: "القوة في الضعف", description: "قوة الله حين نكون ضعفاء.", keywords: ["ضعف", "ضعيف", "قوة", "مرض", "مريض", "منهك"] },
+    },
     label: "Strength in weakness",
     description: "God’s strength when we feel weak.",
     keywords: ["weak", "weakness", "strength", "strong", "sick", "illness", "pain", "suffering", "exhausted"],

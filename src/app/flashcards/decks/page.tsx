@@ -3,6 +3,7 @@ import Link from "next/link";
 import { DailyTargetForm, NewDeckForm } from "@/components/flashcards/DeckControls";
 import { gate } from "@/components/Gate";
 import { createClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/request";
 
 export const metadata: Metadata = { title: "Decks", robots: { index: false } };
 
@@ -10,6 +11,7 @@ export const metadata: Metadata = { title: "Decks", robots: { index: false } };
 export default async function DecksPage() {
   const g = await gate("/flashcards/decks", "Decks");
   if (!g.user) return g.panel;
+  const { T } = await getT();
   const supabase = (await createClient())!;
   const [{ data: decks }, { data: cards }, { data: profile }] = await Promise.all([
     supabase.from("decks").select("id, name, description").order("created_at"),
@@ -19,9 +21,9 @@ export default async function DecksPage() {
   return (
     <div className="mx-auto max-w-xl px-4 pb-6 pt-5">
       <Link href="/flashcards?tab=saved" className="text-sm text-muted hover:underline">
-        ← Saved
+        <span aria-hidden="true" className="inline-block rtl:rotate-180">←</span> {T("Saved", "Enregistrées", "المحفوظة")}
       </Link>
-      <h1 className="mt-2 text-2xl font-bold tracking-tight">Decks</h1>
+      <h1 className="mt-2 text-2xl font-bold tracking-tight">{T("Decks", "Paquets", "المجموعات")}</h1>
       <ul className="mt-5 space-y-2">
         {(decks ?? []).map((d) => (
           <li key={d.id}>

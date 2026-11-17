@@ -2,6 +2,7 @@ import "server-only";
 import { cookies, headers } from "next/headers";
 import { cache } from "react";
 import { dictionaries } from "./i18n/dictionaries";
+import { tri } from "./i18n/tri";
 import { parsePrefs, PREFS_COOKIE, type Locale, type Prefs } from "./prefs";
 
 /** Request-scoped preferences (cookie) with Accept-Language fallback for locale. */
@@ -20,4 +21,10 @@ export const getPrefs = cache(async (): Promise<Prefs> => {
 export async function getDictionary() {
   const prefs = await getPrefs();
   return { t: dictionaries[prefs.locale], locale: prefs.locale, dir: prefs.locale === "ar" ? "rtl" : "ltr" } as const;
+}
+
+/** Server-side translator for the request's interface language. */
+export async function getT() {
+  const prefs = await getPrefs();
+  return { T: tri(prefs.locale), locale: prefs.locale };
 }

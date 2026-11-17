@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { updatePrefs } from "@/app/actions/prefs";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import type { Prefs } from "@/lib/prefs";
+import { useT } from "../LocaleProvider";
 
 export interface ToolbarEdition {
   id: string;
@@ -27,9 +28,11 @@ interface Props {
   t: Dictionary["reader"];
   /** Books of other editions, to tell users when a book is missing. */
   bookAvailability: Record<string, string[]>;
+  /** The edition includes deuterocanonical books (offer the show/hide option). */
+  hasDeuterocanon?: boolean;
 }
 
-export function ReaderToolbar({ editions, edition, groups, book, chapter, prefs, t, bookAvailability }: Props) {
+export function ReaderToolbar({ editions, edition, groups, book, chapter, prefs, t, bookAvailability, hasDeuterocanon = false }: Props) {
   const router = useRouter();
   const [selBook, setSelBook] = useState(book);
   const [selChapter, setSelChapter] = useState(chapter);
@@ -41,6 +44,7 @@ export function ReaderToolbar({ editions, edition, groups, book, chapter, prefs,
   const pendingPatch = useRef<Partial<Prefs>>({});
   const saveTimer = useRef<number | null>(null);
   const id = useId();
+  const T = useT();
 
   const allBooks = groups.flatMap((g) => g.books);
   const chapters = allBooks.find((b) => b.id === selBook)?.chapters ?? 1;
@@ -86,7 +90,7 @@ export function ReaderToolbar({ editions, edition, groups, book, chapter, prefs,
       if (patch.lineHeight) el.style.setProperty("--reader-leading", String(patch.lineHeight));
     }
     pendingPatch.current = { ...pendingPatch.current, ...patch };
-    const needsRender = ["width", "layout", "showNotes", "showVerseNumbers"].some((k) => k in patch);
+    const needsRender = ["width", "layout", "showNotes", "showVerseNumbers", "deuterocanon"].some((k) => k in patch);
     if (saveTimer.current) window.clearTimeout(saveTimer.current);
     saveTimer.current = window.setTimeout(
       () => {
@@ -230,6 +234,12 @@ export function ReaderToolbar({ editions, edition, groups, book, chapter, prefs,
               <input type="checkbox" checked={local.showNotes} onChange={(e) => setPref({ showNotes: e.target.checked })} className="h-5 w-5" />
               {t.notes}
             </label>
+            {hasDeuterocanon && (
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={local.deuterocanon} onChange={(e) => setPref({ deuterocanon: e.target.checked })} className="h-5 w-5" />
+                {T("Show deuterocanonical books (Apocrypha)", "Afficher les livres deutérocanoniques", "إظهار الأسفار القانونية الثانية")}
+              </label>
+            )}
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={local.showVerseNumbers} onChange={(e) => setPref({ showVerseNumbers: e.target.checked })} className="h-5 w-5" />
               {t.verseNumbers}

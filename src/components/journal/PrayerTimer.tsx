@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "../LocaleProvider";
 import { useEffect, useRef, useState } from "react";
 
 /** Optional quiet prayer timer. Silent by default; a soft tone only if the user enables it. */
@@ -27,22 +28,23 @@ export function PrayerTimer() {
     return () => clearTimeout(t);
   }, [remaining, paused]);
 
+  const T = useT();
   const mm = remaining !== null ? `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, "0")}` : null;
 
   return (
     <section className="card p-5" aria-labelledby="timer-h">
-      <h2 id="timer-h" className="font-serif text-xl">Quiet prayer timer</h2>
+      <h2 id="timer-h" className="text-base font-semibold">{T("Quiet prayer timer", "Minuteur de prière", "مؤقّت الصلاة الهادئة")}</h2>
       {remaining === null ? (
         <div className="mt-3 flex flex-wrap items-end gap-3">
-          <div role="group" aria-label="Duration" className="flex gap-1">
+          <div role="group" aria-label={T("Duration", "Durée", "المدة")} className="flex gap-1">
             {[1, 3, 5, 10].map((m) => (
               <button key={m} className={`btn btn-sm ${minutes === m ? "btn-primary" : ""}`} aria-pressed={minutes === m} onClick={() => setMinutes(m)}>
-                {m} min
+                {T(`${m} min`, `${m} min`, `${m} د`)}
               </button>
             ))}
           </div>
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={sound} onChange={(e) => setSound(e.target.checked)} className="h-5 w-5" /> Soft tone at the end
+            <input type="checkbox" checked={sound} onChange={(e) => setSound(e.target.checked)} className="h-5 w-5" /> {T("Soft tone at the end", "Son doux à la fin", "نغمة هادئة في النهاية")}
           </label>
           <button
             className="btn btn-primary"
@@ -52,15 +54,15 @@ export function PrayerTimer() {
               setRemaining(minutes * 60);
             }}
           >
-            Begin
+            {T("Begin", "Commencer", "ابدأ")}
           </button>
-          {finished && <p role="status" className="w-full text-sm text-success">Time is complete. Take your time returning.</p>}
+          {finished && <p role="status" className="w-full text-sm text-success">{T("Time is complete. Take your time returning.", "Le temps est écoulé. Revenez doucement.", "انتهى الوقت. عد على مهل.")}</p>}
         </div>
       ) : (
         <div className="mt-3 flex items-center gap-4">
           <p className="font-serif text-5xl tabular-nums" aria-live="off">{mm}</p>
-          <button className="btn btn-sm" onClick={() => setPaused((p) => !p)}>{paused ? "Resume" : "Pause"}</button>
-          <button className="btn btn-sm btn-ghost" onClick={() => setRemaining(null)}>End</button>
+          <button className="btn btn-sm" onClick={() => setPaused((p) => !p)}>{paused ? T("Resume", "Reprendre", "استئناف") : T("Pause", "Pause", "إيقاف مؤقت")}</button>
+          <button className="btn btn-sm btn-ghost" onClick={() => setRemaining(null)}>{T("End", "Terminer", "إنهاء")}</button>
         </div>
       )}
     </section>

@@ -9,18 +9,23 @@
  *   tests/content.test.ts.
  * - Admins can override or extend this list in the content_daily_verses table.
  */
+import { EXTRA_CARDS, PHRASES_FR_AR } from "./verse-cards-extra";
+
 export interface DailyVerseEntry {
   id: string;
   ref: string;
   topic: string;
   /** One short encouraging line shown on the verse card (editorial, not Scripture). */
   phrase: string;
+  /** The same line in French and Arabic. */
+  phraseFr?: string;
+  phraseAr?: string;
   reflection: string;
   prayer: string;
   question: string;
 }
 
-export const DAILY_VERSES: DailyVerseEntry[] = [
+const BASE: DailyVerseEntry[] = [
   { id: "dv-001", ref: "JHN.3.16", topic: "love", phrase: "You are loved before you have it all figured out.", reflection: "This verse sits inside a night conversation between Jesus and Nicodemus, a religious teacher with honest questions. It describes God’s love as a gift given to the whole world, not a reward earned by a few.", prayer: "Thank God for a love that reaches you before you have everything figured out.", question: "Where do you most need to hear that you are loved today?" },
   { id: "dv-002", ref: "PSA.23.1-3", topic: "peace", phrase: "Let yourself be led to rest today.", reflection: "Psalm 23 pictures God as a shepherd who leads, feeds, and restores. The psalm was written by someone who knew dark valleys, which is part of why it has comforted so many people.", prayer: "Ask to be led toward rest and restoration in the places you feel depleted.", question: "What would ‘still waters’ look like in your day?" },
   { id: "dv-003", ref: "PHP.4.6-7", topic: "anxiety", phrase: "Trade one worry for one prayer of thanks.", reflection: "Paul wrote these words from custody. He invites readers to bring every concern to God with thanksgiving, and describes a peace that guards the heart even when circumstances stay uncertain.", prayer: "Name one specific worry and hand it over in prayer, along with one thing you are thankful for.", question: "Which worry keeps returning, and what would it mean to pray about it instead of only rehearsing it?" },
@@ -66,4 +71,13 @@ export const DAILY_VERSES: DailyVerseEntry[] = [
   { id: "dv-043", ref: "PSA.37.4-5", topic: "trust", phrase: "Delight in God, and trust him with your plans.", reflection: "Psalm 37 encourages patience when others seem to prosper unfairly. Delighting in God and committing our way to him reshapes our desires over time.", prayer: "Commit one plan to God today.", question: "What do you delight in most right now?" },
   { id: "dv-044", ref: "EPH.2.8-9", topic: "grace", phrase: "Grace is a gift, not a grade.", reflection: "Paul states that salvation is by grace through faith, a gift rather than an achievement. The next verse speaks of the good works that follow from this gift.", prayer: "Thank God for grace you could not earn.", question: "Do you find it easier to receive gifts or to earn things?" },
   { id: "dv-045", ref: "NUM.6.24-26", topic: "blessing", phrase: "May the Lord keep you and give you peace.", reflection: "This ancient blessing was spoken by priests over Israel. It asks for God’s keeping, favour, and peace.", prayer: "Pray this blessing over someone you love.", question: "Who could you bless with your words today?" },
+];
+
+/** 365 cards: the 45 above (with French/Arabic lines) plus 320 more. */
+export const DAILY_VERSES: DailyVerseEntry[] = [
+  ...BASE.map((d) => ({ ...d, phraseFr: PHRASES_FR_AR[d.id]?.[0], phraseAr: PHRASES_FR_AR[d.id]?.[1] })),
+  ...EXTRA_CARDS.split("\n").map((line, i) => {
+    const [ref, topic, en, fr, ar] = line.split("|");
+    return { id: `dv-${String(BASE.length + i + 1).padStart(3, "0")}`, ref, topic, phrase: en, phraseFr: fr, phraseAr: ar, reflection: "", prayer: "", question: "" };
+  }),
 ];

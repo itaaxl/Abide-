@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useT } from "../LocaleProvider";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -15,6 +16,7 @@ const DISMISS_KEY = "abide:install-dismissed";
  * Hidden when already installed or dismissed.
  */
 export function InstallPrompt({ always = false }: { always?: boolean }) {
+  const T = useT();
   const [evt, setEvt] = useState<BeforeInstallPromptEvent | null>(null);
   const [ios, setIos] = useState(false);
   const [hidden, setHidden] = useState(true);
@@ -75,21 +77,25 @@ export function InstallPrompt({ always = false }: { always?: boolean }) {
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
           </svg>
-          Install app
+          {T("Install app", "Installer l’app", "ثبّت التطبيق")}
         </button>
       ) : ios ? (
         <button type="button" className="btn btn-sm" aria-expanded={showSteps} onClick={() => setShowSteps((s) => !s)}>
-          Install app
+          {T("Install app", "Installer l’app", "ثبّت التطبيق")}
         </button>
       ) : null}
       {!always && (
         <button type="button" className="btn btn-sm btn-ghost text-muted" onClick={dismiss}>
-          Not now
+          {T("Not now", "Plus tard", "ليس الآن")}
         </button>
       )}
       {showSteps && (
         <p className="w-full text-muted">
-          In Safari, tap the <strong>Share</strong> button, then <strong>Add to Home Screen</strong>.
+          {T(
+            "In Safari, tap the Share button, then “Add to Home Screen”.",
+            "Dans Safari, touchez le bouton Partager, puis « Sur l’écran d’accueil ».",
+            "في Safari، اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية».",
+          )}
         </p>
       )}
     </div>

@@ -1,5 +1,5 @@
 import type { Topic } from "@/content/topics";
-import { tokenize } from "../bible/normalize";
+import { foldText, tokenize } from "../bible/normalize";
 import { parseRefKey, refKey, type PassageRef } from "../bible/reference";
 import type { SearchResult } from "../bible/search-index";
 
@@ -23,13 +23,20 @@ const STOP = new Set(
 export function matchTopics(text: string, topics: Topic[], preferred?: string): Topic[] {
   const tokens = new Set(tokenize(text));
   const lower = text.toLowerCase();
+  const folded = foldText(text);
   const scored = topics
-    .map((t) => ({
-      t,
-      score:
-        (t.slug === preferred ? 100 : 0) +
-        t.keywords.reduce((s, k) => s + (k.includes(" ") ? (lower.includes(k) ? 2 : 0) : tokens.has(k) ? 1 : 0), 0),
-    }))
+    .map((t) => {
+      // French and Arabic keywords match as (accent/diacritic-folded) substrings,
+      // so prefixes such as Arabic "و"/"ال" or French elisions still match.
+      const extra = [...(t.i18n?.fr?.keywords ?? []), ...(t.i18n?.ar?.keywords ?? [])];
+      return {
+        t,
+        score:
+          (t.slug === preferred ? 100 : 0) +
+          t.keywords.reduce((s, k) => s + (k.includes(" ") ? (lower.includes(k) ? 2 : 0) : tokens.has(k) ? 1 : 0), 0) +
+          extra.reduce((s, k) => s + (folded.includes(foldText(k)) ? 1 : 0), 0),
+      };
+    })
     .filter((x) => x.score > 0)
     .sort((a, b) => b.score - a.score);
   return scored.slice(0, 3).map((x) => x.t);

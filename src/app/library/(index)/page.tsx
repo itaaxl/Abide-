@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { gate, PrivateBadge } from "@/components/Gate";
 import { LibraryItemControls } from "@/components/LibraryItemControls";
+import { WeekSummary } from "@/components/WeekSummary";
 import { getEdition, getVerses } from "@/lib/bible/provider";
-import { SUGGESTED_TAGS } from "@/lib/annotations";
+import { SUGGESTED_TAGS, TAG_LABELS } from "@/lib/annotations";
+import { getT } from "@/lib/request";
+import type { Translate } from "@/lib/i18n/tri";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "My Library", robots: { index: false } };
@@ -25,12 +28,13 @@ async function labelFor(edition: string, book: string, chapter: number, from: nu
 
 export default async function LibraryPage({ searchParams }: PageProps<"/library">) {
   const g = await gate("/library", "My Library");
+  const { T } = await getT();
   if (!g.user)
     return (
       <>
         {g.panel}
         <div className="mx-auto -mt-2 max-w-xl px-4 pb-10">
-          <MoreLinks />
+          <MoreLinks T={T} />
         </div>
       </>
     );
@@ -55,21 +59,24 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
   }
   if (q) items = items.filter((i) => i.label.toLowerCase().includes(q) || i.text.toLowerCase().includes(q) || i.extra?.toLowerCase().includes(q));
   const tabs: { id: Tab; label: string }[] = [
-    { id: "bookmarks", label: "Bookmarks" },
-    { id: "highlights", label: "Highlights" },
-    { id: "notes", label: "Notes" },
+    { id: "bookmarks", label: T("Bookmarks", "Signets", "الإشارات") },
+    { id: "highlights", label: T("Highlights", "Surlignages", "التظليلات") },
+    { id: "notes", label: T("Notes", "Notes", "الملاحظات") },
   ];
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold tracking-tight">My Library</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{T("My Library", "Ma bibliothèque", "مكتبتي")}</h1>
         <PrivateBadge />
       </div>
       <div className="mt-4">
-        <MoreLinks />
+        <WeekSummary />
       </div>
-      <nav aria-label="Library sections" className="mt-6 flex gap-2 border-b border-rule">
+      <div className="mt-4">
+        <MoreLinks T={T} />
+      </div>
+      <nav aria-label={T("Library sections", "Sections de la bibliothèque", "أقسام المكتبة")} className="mt-6 flex gap-2 border-b border-rule">
         {tabs.map((t) => (
           <Link key={t.id} href={`/library?tab=${t.id}`} aria-current={tab === t.id ? "page" : undefined} className={`-mb-px border-b-2 px-4 py-2 ${tab === t.id ? "border-gold font-semibold" : "border-transparent text-muted"}`}>
             {t.label}
@@ -79,28 +86,32 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
       <form className="mt-4 flex flex-wrap gap-2" role="search">
         <input type="hidden" name="tab" value={tab} />
         <label htmlFor="lq" className="sr-only">
-          Search your library by reference or text
+          {T("Search your library by reference or text", "Chercher dans votre bibliothèque", "ابحث في مكتبتك")}
         </label>
-        <input id="lq" name="q" defaultValue={q} className="input max-w-sm" placeholder="Search by reference, verse, or note" />
-        <button className="btn">Search</button>
+        <input id="lq" name="q" defaultValue={q} className="input max-w-sm" placeholder={T("Search by reference, verse, or note", "Référence, verset ou note", "مرجع أو آية أو ملاحظة")} />
+        <button className="btn">{T("Search", "Chercher", "بحث")}</button>
         {(q || tag) && (
           <Link className="btn btn-ghost" href={`/library?tab=${tab}`}>
-            Clear
+            {T("Clear", "Effacer", "مسح")}
           </Link>
         )}
       </form>
       {tab === "bookmarks" && (
-        <div className="mt-3 flex flex-wrap gap-1 text-sm" aria-label="Filter by collection">
+        <div className="mt-3 flex flex-wrap gap-1 text-sm" aria-label={T("Filter by collection", "Filtrer par collection", "تصفية حسب المجموعة")}>
           {SUGGESTED_TAGS.map((t) => (
             <Link key={t} href={`/library?tab=bookmarks&tag=${encodeURIComponent(t)}`} className={`btn btn-sm ${tag === t ? "btn-primary" : ""}`}>
-              {t}
+              {TAG_LABELS[t] ? T(...TAG_LABELS[t]) : t}
             </Link>
           ))}
         </div>
       )}
       {items.length === 0 ? (
         <p className="mt-10 text-muted">
-          Nothing here yet. Select a verse in the <Link href="/bible" className="underline">reader</Link> to bookmark, highlight, or add a note.
+          {T("Nothing here yet. Select a verse in the ", "Rien pour l’instant. Sélectionnez un verset dans le ", "لا شيء بعد. اختر آية في ")}
+          <Link href="/bible" className="underline">
+            {T("reader", "lecteur", "القارئ")}
+          </Link>
+          {T(" to bookmark, highlight, or add a note.", " pour l’ajouter aux signets, la surligner ou l’annoter.", " لحفظها أو تظليلها أو إضافة ملاحظة.")}
         </p>
       ) : (
         <ul className="mt-6 space-y-4">
@@ -126,14 +137,14 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
 }
 
 /** Secondary sections that live under Library (not in the bottom bar). */
-function MoreLinks() {
+function MoreLinks({ T }: { T: Translate }) {
   const links = [
-    { href: "/journal", label: "Prayer Journal", hint: "Private prayers and reflections", d: "M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6V3ZM6 3v18M10 8h5M10 12h5" },
-    { href: "/discover", label: "Discover", hint: "Passages by theme", d: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM15.5 8.5l-2 5-5 2 2-5 5-2Z" },
-    { href: "/watch", label: "Watch", hint: "Films and teaching, official links", d: "M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1ZM10 9.5v5l4.5-2.5L10 9.5Z" },
+    { href: "/journal", label: T("Prayer Journal", "Journal de prière", "دفتر الصلاة"), hint: T("Private prayers and reflections", "Prières et réflexions privées", "صلوات وتأملات خاصة"), d: "M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6V3ZM6 3v18M10 8h5M10 12h5" },
+    { href: "/discover", label: T("Discover", "Découvrir", "اكتشف"), hint: T("Passages by theme", "Passages par thème", "مقاطع حسب الموضوع"), d: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM15.5 8.5l-2 5-5 2 2-5 5-2Z" },
+    { href: "/watch", label: T("Watch", "Regarder", "شاهد"), hint: T("Films and teaching, official links", "Films et enseignements, liens officiels", "أفلام وتعليم، روابط رسمية"), d: "M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1ZM10 9.5v5l4.5-2.5L10 9.5Z" },
   ];
   return (
-    <nav aria-label="More in Library" className="grid gap-2 sm:grid-cols-3">
+    <nav aria-label={T("More in Library", "Plus dans la bibliothèque", "المزيد في المكتبة")} className="grid gap-2 sm:grid-cols-3">
       {links.map((l) => (
         <Link key={l.href} href={l.href} className="pressable card flex items-center gap-3 px-4 py-3 hover:border-gold">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold-soft text-gold">

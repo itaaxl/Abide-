@@ -26,6 +26,8 @@ export const prefsSchema = z.object({
   locale: z.enum(LOCALES).catch("en"),
   showNotes: z.boolean().catch(true),
   showVerseNumbers: z.boolean().catch(true),
+  /** Show the deuterocanonical books (Apocrypha) where an edition includes them. */
+  deuterocanon: z.boolean().catch(true),
   timezone: z.string().max(64).catch("UTC"),
 });
 

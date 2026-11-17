@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { DAILY_VERSES } from "@/content/daily-verses";
 import { PLANS } from "@/content/plans";
 import { TOPICS } from "@/content/topics";
+import { mapReference } from "@/lib/bible/mapping";
 import { parseRefKey } from "@/lib/bible/reference";
 import type { EditionMeta } from "@/lib/bible/types";
 
@@ -32,8 +33,34 @@ describe("curated content references", () => {
     for (const d of DAILY_VERSES) assertValid(d.ref, web);
   });
 
+  it("verse cards are unique and map to every installed edition (biblical accuracy)", async () => {
+    expect(DAILY_VERSES.length).toBeGreaterThanOrEqual(365);
+    expect(new Set(DAILY_VERSES.map((d) => d.ref)).size, "duplicate verse card").toBe(DAILY_VERSES.length);
+    const problems: string[] = [];
+    for (const d of DAILY_VERSES) {
+      expect(d.phrase && d.phraseFr && d.phraseAr, `${d.id} reflections`).toBeTruthy();
+      for (const e of others) {
+        const m = await mapReference(parseRefKey(d.ref)!, "eng-web", e.id);
+        if (!m.ref) problems.push(`${d.ref} → ${e.id}: ${m.status}`);
+      }
+    }
+    expect(problems).toEqual([]);
+  });
+
   it("topic passages are valid", () => {
     for (const t of TOPICS) for (const p of t.passages) assertValid(p.ref, web);
+  });
+
+  it("every plan reading maps to every installed edition with matching numbering", async () => {
+    const problems: string[] = [];
+    for (const plan of PLANS)
+      for (const day of plan.days)
+        for (const r of day.refs)
+          for (const e of others) {
+            const m = await mapReference(parseRefKey(r)!, "eng-web", e.id);
+            if (!m.ref) problems.push(`${plan.slug}: ${r} → ${e.id}: ${m.status}`);
+          }
+    expect(problems).toEqual([]);
   });
 
   it("every plan day has valid passages in every installed edition", () => {

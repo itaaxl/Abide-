@@ -4,7 +4,7 @@ import type { SearchResult } from "../bible/search-index";
 import type { EditionMeta, Verse } from "../bible/types";
 import { buildUserMessage, SYSTEM_PROMPT } from "./prompt";
 import { retrieveCandidates, type Candidate } from "./retrieve";
-import { CRISIS_RESPONSE, detectCrisis } from "./safety";
+import { crisisResponse, detectCrisis } from "./safety";
 import { guidanceOutputSchema, type GuidanceOutput, type GuidanceResult } from "./schema";
 
 export type ModelOutcome =
@@ -27,6 +27,8 @@ export interface GuidanceDeps {
 
 export interface GuidanceInput {
   text: string;
+  /** Interface language: AI writes in it; fixed messages use it. */
+  locale?: "en" | "fr" | "ar";
   topic?: string;
   tone?: string;
 }
@@ -39,10 +41,11 @@ export interface GuidanceInput {
  */
 export async function runGuidance(input: GuidanceInput, deps: GuidanceDeps): Promise<GuidanceResult> {
   if (detectCrisis(input.text)) {
-    return { kind: "crisis", opening: [CRISIS_RESPONSE.title, ...CRISIS_RESPONSE.body].join("\n\n"), passages: [], practicalSteps: [], suggestHumanSupport: true };
+    return { kind: "crisis", opening: crisisResponse(input.locale), passages: [], practicalSteps: [], suggestHumanSupport: true };
   }
 
-  if (isTooVague(input.text, input.topic)) return clarify(VAGUE_QUESTION);
+  const Q = QUESTIONS[input.locale ?? "en"];
+  if (isTooVague(input.text, input.topic)) return clarify(Q.vague);
 
   const { candidates, topics } = await retrieveCandidates(input.text, input.topic, deps.topics, deps.search);
   const resolved = (
@@ -70,12 +73,12 @@ export async function runGuidance(input: GuidanceInput, deps: GuidanceDeps): Pro
   };
 
   if (!deps.aiAvailable) return fallback("unconfigured");
-  if (resolved.length === 0) return clarify(NO_MATCH_QUESTION);
+  if (resolved.length === 0) return clarify(Q.noMatch);
 
   const remaining = await deps.reserve();
   if (remaining === null) return fallback("quota");
 
-  const outcome = await deps.callModel(SYSTEM_PROMPT, buildUserMessage(input.text, input.tone, resolved));
+  const outcome = await deps.callModel(SYSTEM_PROMPT, buildUserMessage(input.text, input.tone, resolved, input.locale));
   await deps.recordResult(outcome);
   if (outcome.status === "refusal") return fallback("refusal", remaining);
   if (outcome.status === "quota") return fallback("quota", remaining);
@@ -84,16 +87,26 @@ export async function runGuidance(input: GuidanceInput, deps: GuidanceDeps): Pro
   const parsed = guidanceOutputSchema.safeParse(outcome.output);
   if (!parsed.success) return fallback("malformed", remaining);
   if (parsed.data.needs_clarification)
-    return { ...clarify(clamp(parsed.data.clarifying_question, 300) || VAGUE_QUESTION), remainingToday: remaining, model: outcome.model };
+    return { ...clarify(clamp(parsed.data.clarifying_question, 300) || Q.vague), remainingToday: remaining, model: outcome.model };
   const validated = validateOutput(parsed.data, resolved, deps.edition);
   if (validated.passages.length === 0) return fallback("malformed", remaining);
   return { ...validated, remainingToday: remaining, model: outcome.model };
 }
 
-const VAGUE_QUESTION =
-  "Could you tell me a little more? For example, what is on your mind, or what situation you would like Scripture for (worry about work, grief, a decision, gratitude…).";
-const NO_MATCH_QUESTION =
-  "I couldn't find passages that clearly fit those words. Could you describe the situation or feeling in another way, or choose a topic below?";
+const QUESTIONS = {
+  en: {
+    vague: "Could you tell me a little more? For example, what is on your mind, or what situation you would like Scripture for (worry about work, grief, a decision, gratitude…).",
+    noMatch: "I couldn't find passages that clearly fit those words. Could you describe the situation or feeling in another way, or choose a topic?",
+  },
+  fr: {
+    vague: "Pouvez-vous en dire un peu plus ? Par exemple, ce qui vous préoccupe, ou la situation pour laquelle vous cherchez un passage (inquiétude au travail, deuil, décision, gratitude…).",
+    noMatch: "Je n’ai pas trouvé de passages qui correspondent clairement. Pouvez-vous décrire la situation autrement, ou choisir un thème ?",
+  },
+  ar: {
+    vague: "هل يمكنك أن تخبرني بالمزيد؟ مثلًا ما الذي يشغل بالك، أو الموقف الذي تبحث له عن مقطع (قلق في العمل، حزن، قرار، شكر…).",
+    noMatch: "لم أجد مقاطع تناسب هذه الكلمات بوضوح. هل يمكنك وصف الموقف أو الشعور بطريقة أخرى، أو اختيار موضوع؟",
+  },
+} as const;
 
 function clarify(question: string): GuidanceResult {
   return { kind: "clarify", opening: question, passages: [], practicalSteps: [], suggestHumanSupport: false };

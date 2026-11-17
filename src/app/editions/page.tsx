@@ -1,3 +1,4 @@
+import { EnglishOnlyNotice } from "@/components/EnglishOnlyNotice";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { listEditions } from "@/lib/bible/provider";
@@ -7,7 +8,8 @@ export const metadata: Metadata = { title: "Bible editions" };
 export default async function EditionsPage() {
   const editions = await listEditions();
   return (
-    <article className="prose-page mx-auto max-w-3xl px-4 py-12">
+    <article className="prose-page mx-auto max-w-3xl px-4 py-12" lang="en" dir="ltr">
+      <EnglishOnlyNotice />
       <h1>Bible editions</h1>
       <p>
         Only complete editions whose rights we have verified are offered. Each was imported from its publisher’s official files and checked verse

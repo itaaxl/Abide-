@@ -44,7 +44,8 @@ const inputSchema = z.discriminatedUnion("mode", [
  * itself is always read from the dataset. Nothing is saved here — the person
  * saves the cards they choose. Results are cached and reused to control cost.
  */
-export async function generateCards(raw: CardsInput & { edition?: string }): Promise<ActionResult<GenerateCardsResult>> {
+export async function generateCards(raw: CardsInput & { edition?: string; locale?: string }): Promise<ActionResult<GenerateCardsResult>> {
+  const lang = raw.locale === "fr" || raw.locale === "ar" ? raw.locale : "en";
   const cfg = aiConfig();
   const parsed = inputSchema.safeParse(raw);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
@@ -65,7 +66,7 @@ export async function generateCards(raw: CardsInput & { edition?: string }): Pro
     return { ok: false, error: "AI card generation isn’t available on this site right now." };
 
   // 1) Reuse an earlier result for the same request (no AI cost, no quota used).
-  const key = cacheKey(input, edition.id, cfg.model, userId);
+  const key = cacheKey(input, edition.id, cfg.model, userId, lang);
   const { data: hit } = await admin.from("ai_card_cache").select("result").eq("cache_key", key).maybeSingle();
   if (hit?.result) {
     const cards = await fromCached(hit.result as CachedSelection, edition);
@@ -77,7 +78,15 @@ export async function generateCards(raw: CardsInput & { edition?: string }): Pro
   if (candidates.length < 3)
     return {
       ok: true,
-      data: { kind: "clarify", question: "I couldn't find enough passages for that. Could you describe it differently, or try a topic or a chapter?" },
+      data: {
+        kind: "clarify",
+        question:
+          lang === "fr"
+            ? "Je n’ai pas trouvé assez de passages. Pouvez-vous reformuler, ou essayer un thème ou un chapitre ?"
+            : lang === "ar"
+              ? "لم أجد مقاطع كافية. هل يمكنك إعادة الصياغة أو تجربة موضوع أو أصحاح؟"
+              : "I couldn't find enough passages for that. Could you describe it differently, or try a topic or a chapter?",
+      },
     };
 
   // 3) Limits: a per-minute burst limit and the shared daily AI allowance.
@@ -87,7 +96,7 @@ export async function generateCards(raw: CardsInput & { edition?: string }): Pro
   if (qErr || used === -1) return { ok: false, error: "You’ve reached today’s limit for AI requests. Please try again tomorrow." };
   const remainingToday = cfg.dailyLimit - Number(used);
 
-  const outcome = await callModel(cfg, CARDS_SYSTEM_PROMPT, buildCardsMessage(describeRequest(input, edition), candidates), cardsOutputSchema);
+  const outcome = await callModel(cfg, CARDS_SYSTEM_PROMPT, buildCardsMessage(describeRequest(input, edition), candidates, lang), cardsOutputSchema);
   await admin.rpc("record_ai_result", { p_user: userId, p_day: day, p_in: outcome.inputTokens ?? 0, p_out: outcome.outputTokens ?? 0, p_failed: outcome.status !== "ok" });
   if (outcome.status === "quota")
     return { ok: false, error: "The free AI allowance for this site is used up for now. Please try again later — the curated verse cards below are always available." };

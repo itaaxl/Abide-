@@ -1,10 +1,12 @@
+import { EnglishOnlyNotice } from "@/components/EnglishOnlyNotice";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Credits" };
 
 export default function CreditsPage() {
   return (
-    <article className="prose-page mx-auto max-w-2xl px-4 py-12">
+    <article className="prose-page mx-auto max-w-2xl px-4 py-12" lang="en" dir="ltr">
+      <EnglishOnlyNotice />
       <h1>Credits</h1>
       <h2>Scripture</h2>
       <ul>

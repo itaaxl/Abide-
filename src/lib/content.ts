@@ -31,6 +31,8 @@ export async function getDailyVerses(): Promise<DailyVerseEntry[]> {
     ref: String(r.ref_key),
     topic: String(r.topic),
     phrase: r.phrase ? String(r.phrase) : (DAILY_VERSES.find((d) => d.id === String(r.id))?.phrase ?? String(r.reflection).split(/(?<=[.!?])\s/)[0]),
+    phraseFr: DAILY_VERSES.find((d) => d.id === String(r.id))?.phraseFr,
+    phraseAr: DAILY_VERSES.find((d) => d.id === String(r.id))?.phraseAr,
     reflection: String(r.reflection),
     prayer: String(r.prayer ?? ""),
     question: String(r.question ?? ""),
@@ -40,12 +42,13 @@ export async function getDailyVerses(): Promise<DailyVerseEntry[]> {
 
 export async function getPlans(): Promise<ReadingPlan[]> {
   const db = await fromDb("content_plans", (r) => ({ ...(r.data as ReadingPlan), slug: String(r.slug) }));
-  return merge(PLANS, db, (p) => p.slug);
+  // Admin-edited plans keep the built-in translations unless they supply their own.
+  return merge(PLANS, db, (p) => p.slug).map((p) => ({ ...p, i18n: p.i18n ?? PLANS.find((s) => s.slug === p.slug)?.i18n }));
 }
 
 export async function getTopics(): Promise<Topic[]> {
   const db = await fromDb("content_topics", (r) => ({ ...(r.data as Topic), slug: String(r.slug) }));
-  return merge(TOPICS, db, (t) => t.slug);
+  return merge(TOPICS, db, (t) => t.slug).map((t) => ({ ...t, i18n: t.i18n ?? TOPICS.find((s) => s.slug === t.slug)?.i18n }));
 }
 
 export async function getMedia(): Promise<MediaEntry[]> {

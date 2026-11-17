@@ -13,8 +13,7 @@ export function AuthShell({ title, intro, children }: { title: string; intro?: R
             children
           ) : (
             <p role="status" className="rounded-lg border border-rule bg-gold-soft/30 p-4 text-sm">
-              Accounts are not configured on this deployment yet (Supabase environment variables are missing). Reading, search,
-              the daily verse, reading plan previews, and the Watch page all work without an account.
+              Accounts are not configured on this deployment yet. Reading, search, verse cards, and reading plan previews work without an account.
             </p>
           )}
         </div>

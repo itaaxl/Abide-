@@ -1,3 +1,4 @@
+import { tri } from "@/lib/i18n/tri";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -25,17 +26,20 @@ export default async function BookPage({ params }: PageProps<"/bible/[edition]/[
     notFound();
   }
   if (code !== rawBook) redirect(`/bible/${id}/${code}`);
-  const { t } = await getDictionary();
+  const { t, locale } = await getDictionary();
+  const T = tri(locale);
   return (
     <div className="mx-auto max-w-3xl px-4 py-10" dir={edition.direction}>
       <Link href={`/bible/${id}`} className="text-sm text-muted underline">
-        ← {t.reader.books}
+        <span aria-hidden="true" className="inline-block rtl:rotate-180">←</span> {t.reader.books}
       </Link>
       <h1 className="mt-4 text-2xl font-bold tracking-tight">{book.name}</h1>
       {book.longName !== book.name && <p className="mt-1 font-serif italic text-muted">{book.longName}</p>}
       {BOOK_INTROS[book.id] && (
         <aside className="card mt-6 p-5" dir="ltr" lang="en">
-          <p className="text-xs uppercase tracking-wider text-muted">Introduction · editorial summary, not Scripture</p>
+          <p className="text-xs uppercase tracking-wider text-muted" lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
+            {T("Introduction · editorial summary, not Scripture", "Introduction (en anglais) · résumé éditorial, pas l’Écriture", "مقدمة (بالإنجليزية) · ملخّص تحريري، ليس من الكتاب المقدس")}
+          </p>
           <p className="mt-2 leading-relaxed">{BOOK_INTROS[book.id]}</p>
         </aside>
       )}

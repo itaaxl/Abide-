@@ -1,7 +1,9 @@
+import { getT } from "@/lib/request";
 import type { ResolvedPassage } from "@/lib/bible/passage";
 
 /** Exact Scripture rendered from the authoritative dataset, with its reference and edition. */
-export function ScriptureQuote({ passage, size = "lg" }: { passage: ResolvedPassage; size?: "md" | "lg" }) {
+export async function ScriptureQuote({ passage, size = "lg" }: { passage: ResolvedPassage; size?: "md" | "lg" }) {
+  const { T } = await getT();
   const multi = passage.verses.length > 1;
   return (
     <figure>
@@ -19,7 +21,12 @@ export function ScriptureQuote({ passage, size = "lg" }: { passage: ResolvedPass
       </blockquote>
       <figcaption className="mt-3 text-sm text-muted">
         — <span className="font-semibold text-gold">{passage.label}</span> · {passage.edition.abbreviation}
-        {passage.mapping === "psalm-title-offset" && <span> · numbering adjusted for this edition’s Psalm titles</span>}
+        {passage.mapping === "psalm-title-offset" && (
+          <span>
+            {" · "}
+            {T("numbering adjusted for this edition’s Psalm titles", "numérotation ajustée aux titres des Psaumes de cette édition", "ترقيم معدّل وفق عناوين المزامير في هذه الطبعة")}
+          </span>
+        )}
         {passage.fallbackFrom && <span> · shown in {passage.edition.name} because this passage’s numbering differs in the translation you selected</span>}
       </figcaption>
     </figure>

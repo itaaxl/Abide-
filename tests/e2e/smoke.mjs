@@ -30,7 +30,7 @@ const assert = (cond, msg) => {
 };
 
 const browser = await chromium.launch();
-const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
 const page = await ctx.newPage();
 const cspErrors = [];
 page.on("console", (m) => {
@@ -44,6 +44,7 @@ await check("home shows search, reader and book browser (no duplicate daily pane
   assert((await page.getByPlaceholder(/John 3:16/).count()) > 0, "example hint missing");
   assert((await page.locator('[aria-roledescription="carousel"]').count()) === 0, "verse carousel should live on /flashcards only");
   assert((await page.locator("article.scripture").count()) > 0, "reader missing");
+  await page.locator("summary", { hasText: "Browse books" }).click();
   assert((await page.getByRole("heading", { name: /Old Testament/ }).count()) > 0, "OT browser missing");
   assert((await page.getByRole("heading", { name: /New Testament/ }).count()) > 0, "NT browser missing");
 });
@@ -217,7 +218,7 @@ await check("focus mode: hides chrome, keeps position, Back and Exit return", as
   await p.locator('[data-verse="20"]').first().evaluate((e) => e.scrollIntoView({ block: "start" }));
   await p.evaluate(() => window.scrollBy(0, -10));
   const before = await topVerse();
-  await p.getByRole("button", { name: "Focus mode" }).evaluate((b) => b.click());
+  await p.locator("header").getByRole("button", { name: "Focus mode" }).last().evaluate((b) => b.click());
   await p.getByRole("button", { name: "Exit focus mode" }).waitFor();
   const during = await topVerse();
   assert(Math.abs(Number(during) - Number(before)) <= 1, `enter moved ${before} -> ${during}`);
@@ -236,14 +237,32 @@ await check("focus mode: hides chrome, keeps position, Back and Exit return", as
   assert(Math.abs(Number(after) - Number(reading)) <= 1, `exit moved ${reading} -> ${after}`);
   assert((await p.evaluate(() => document.documentElement.dataset.theme)) === "light", "theme changed");
   // Exit button (and Escape) also work.
-  await p.getByRole("button", { name: "Focus mode" }).click();
+  await p.getByRole("button", { name: "Focus mode" }).last().click();
   await p.getByRole("button", { name: "Exit focus mode" }).click();
-  await p.getByRole("button", { name: "Focus mode" }).waitFor();
-  await p.getByRole("button", { name: "Focus mode" }).click();
+  await p.getByRole("button", { name: "Focus mode" }).last().waitFor();
+  await p.getByRole("button", { name: "Focus mode" }).last().click();
   await p.keyboard.press("Escape");
   await p.locator(".site-header").waitFor({ state: "visible" });
   assert(p.url().endsWith("/bible/eng-web/PSA/119"), `url ${p.url()}`);
   await c.close();
+});
+
+await check("new features: plans, preview image, listen, whole-book download, image export", async () => {
+  await page.goto(`${BASE}/plans`, { waitUntil: "networkidle" });
+  assert((await page.getByRole("link", { name: "View plan" }).count()) === 9, "expected 9 plans");
+  const og = await page.request.get(`${BASE}/p/eng-web/JHN.3.16/opengraph-image`);
+  assert(og.status() === 200 && og.headers()["content-type"] === "image/png", "preview image");
+  await page.goto(`${BASE}/bible/eng-web/PSA/23`, { waitUntil: "networkidle" });
+  assert(await page.getByRole("button", { name: "Listen" }).isVisible(), "listen button");
+  await page.locator("summary", { hasText: "Offline" }).click();
+  assert(await page.getByRole("button", { name: /Whole book/ }).isVisible(), "whole book download");
+  await page.locator("summary", { hasText: "Offline" }).click();
+  assert(await page.getByText("Why does this translation say “Yahweh”?").isVisible(), "Yahweh note");
+  await page.goto(`${BASE}/flashcards`, { waitUntil: "networkidle" });
+  const card = page.locator('[aria-roledescription="slide"]:not([aria-hidden="true"])').first();
+  await card.getByRole("button", { name: "Download image" }).click();
+  const [dl] = await Promise.all([page.waitForEvent("download"), card.getByRole("button", { name: "Square" }).click()]);
+  assert(/-square\.png$/.test(dl.suggestedFilename()), `filename ${dl.suggestedFilename()}`);
 });
 
 await check("Arabic interface: RTL layout and Arabic verse card", async () => {

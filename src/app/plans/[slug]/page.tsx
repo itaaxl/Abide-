@@ -9,7 +9,8 @@ import { getEdition } from "@/lib/bible/provider";
 import { formatReference, parseRefKey, passageHref } from "@/lib/bible/reference";
 import { getPlans } from "@/lib/content";
 import { getUserTimezone } from "@/lib/daily";
-import { getPrefs } from "@/lib/request";
+import { planText } from "@/content/plans";
+import { getPrefs, getT } from "@/lib/request";
 import { createClient } from "@/lib/supabase/server";
 import { daysBetween, localDate } from "@/lib/time";
 import { site } from "@/config/site";
@@ -24,7 +25,8 @@ export default async function PlanPage({ params }: PageProps<"/plans/[slug]">) {
   const { slug } = await params;
   const plan = (await getPlans()).find((p) => p.slug === slug);
   if (!plan) notFound();
-  const [user, prefs] = await Promise.all([getSessionUser(), getPrefs()]);
+  const [user, prefs, { T, locale }] = await Promise.all([getSessionUser(), getPrefs(), getT()]);
+  const text = planText(plan, locale);
 
   let enrollment: { id: string; status: string; start_date: string; edition: string } | null = null;
   let completed = new Set<number>();
@@ -47,9 +49,9 @@ export default async function PlanPage({ params }: PageProps<"/plans/[slug]">) {
         d.refs.map(async (key) => {
           const ref = parseRefKey(key)!;
           const m = await mapReference(ref, site.defaultEdition, edition.id);
-          if (m.ref) return { ok: true as const, label: formatReference(m.ref, edition), href: passageHref(edition.id, m.ref), note: m.status === "psalm-title-offset" ? "numbering adjusted" : null };
+          if (m.ref) return { ok: true as const, label: formatReference(m.ref, edition), href: passageHref(edition.id, m.ref), note: m.status === "psalm-title-offset" ? T("numbering adjusted", "numérotation ajustée", "ترقيم معدّل") : null };
           const web = (await getEdition(site.defaultEdition))!;
-          return { ok: false as const, label: formatReference(ref, web), href: passageHref(web.id, ref), note: m.status === "missing-book" ? `not included in ${edition.abbreviation}` : `numbering differs in ${edition.abbreviation}; opens in ${web.abbreviation}` };
+          return { ok: false as const, label: formatReference(ref, web), href: passageHref(web.id, ref), note: m.status === "missing-book" ? T(`not included in ${edition.abbreviation}`, `absent de ${edition.abbreviation}`, `غير موجود في ${edition.abbreviation}`) : T(`numbering differs in ${edition.abbreviation}; opens in ${web.abbreviation}`, `numérotation différente dans ${edition.abbreviation} ; s’ouvre dans ${web.abbreviation}`, `ترقيم مختلف في ${edition.abbreviation}؛ يُفتح في ${web.abbreviation}`) };
         }),
       ),
     })),
@@ -66,15 +68,22 @@ export default async function PlanPage({ params }: PageProps<"/plans/[slug]">) {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <Link href="/plans" className="text-sm text-muted underline">← Reading Plans</Link>
-      <h1 className="mt-3 text-2xl font-bold tracking-tight">{plan.title}</h1>
+      <Link href="/plans" className="text-sm text-muted underline">
+        <span aria-hidden="true" className="inline-block rtl:rotate-180">←</span> {T("Reading Plans", "Plans de lecture", "خطط القراءة")}
+      </Link>
+      <h1 className="mt-3 text-2xl font-bold tracking-tight">{text.title}</h1>
       <p className="mt-1 text-gold">
-        {plan.days.length} days · about {plan.minutesPerDay} minutes a day · {edition.name}
+        {T(`${plan.days.length} days · about ${plan.minutesPerDay} minutes a day`, `${plan.days.length} jours · environ ${plan.minutesPerDay} minutes par jour`, `${plan.days.length} يومًا · نحو ${plan.minutesPerDay} دقائق يوميًا`)} · {edition.name}
       </p>
-      <p className="mt-4 leading-relaxed">{plan.description}</p>
+      <p className="mt-4 leading-relaxed">{text.description}</p>
       {conflicts > 0 && (
         <p role="note" className="card mt-4 p-4 text-sm">
-          ⚠ {conflicts} reading{conflicts === 1 ? "" : "s"} can’t be shown in {edition.abbreviation} with matching verse numbers and will open in the World English Bible instead.
+          ⚠{" "}
+          {T(
+            `${conflicts} reading${conflicts === 1 ? "" : "s"} can’t be shown in ${edition.abbreviation} with matching verse numbers and will open in the World English Bible instead.`,
+            `${conflicts} lecture(s) ne peuvent pas s’afficher dans ${edition.abbreviation} avec la même numérotation et s’ouvriront dans la World English Bible.`,
+            `${conflicts} من القراءات لا يمكن عرضها في ${edition.abbreviation} بنفس الترقيم، وستُفتح في الترجمة الإنجليزية (WEB).`,
+          )}
         </p>
       )}
 
@@ -83,13 +92,23 @@ export default async function PlanPage({ params }: PageProps<"/plans/[slug]">) {
           <section className="card space-y-3 p-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="font-semibold">
-                {enrollment.status === "completed" ? "Plan completed 🎉" : enrollment.status === "paused" ? "Paused" : `Day ${Math.max(1, scheduledDay)} of ${plan.days.length}`}
+                {enrollment.status === "completed"
+                  ? T("Plan completed 🎉", "Plan terminé 🎉", "اكتملت الخطة 🎉")
+                  : enrollment.status === "paused"
+                    ? T("Paused", "En pause", "متوقفة مؤقتًا")
+                    : T(`Day ${Math.max(1, scheduledDay)} of ${plan.days.length}`, `Jour ${Math.max(1, scheduledDay)} sur ${plan.days.length}`, `اليوم ${Math.max(1, scheduledDay)} من ${plan.days.length}`)}
               </p>
               <PrivateBadge />
             </div>
             <p className="text-sm text-muted">
-              {completed.size} of {plan.days.length} readings completed.
-              {behind && " Life happens — you can carry on where you left off, or shift the schedule so it starts from today. Nothing you’ve completed is lost."}
+              {T(`${completed.size} of ${plan.days.length} readings completed.`, `${completed.size} lectures sur ${plan.days.length} terminées.`, `أُنجزت ${completed.size} من ${plan.days.length} قراءات.`)}
+              {behind &&
+                " " +
+                  T(
+                    "Life happens — you can carry on where you left off, or shift the schedule so it starts from today. Nothing you’ve completed is lost.",
+                    "La vie suit son cours — reprenez où vous en étiez, ou décalez le programme pour qu’il commence aujourd’hui. Rien de ce que vous avez lu n’est perdu.",
+                    "الحياة تحدث — تابع من حيث توقفت، أو أجّل الجدول ليبدأ من اليوم. لن تفقد شيئًا مما أنجزته.",
+                  )}
             </p>
             <div className="h-2 rounded-full bg-rule" aria-hidden="true">
               <div className="h-2 rounded-full bg-gold" style={{ width: `${(completed.size / plan.days.length) * 100}%` }} />
@@ -100,7 +119,11 @@ export default async function PlanPage({ params }: PageProps<"/plans/[slug]">) {
           <EnrollButton slug={plan.slug} edition={edition.id} canEnroll />
         ) : (
           <p className="text-sm text-muted">
-            Anyone can read along below. <Link href={`/auth/sign-in?next=/plans/${plan.slug}`} className="underline">Sign in</Link> to track your progress privately.
+            {T("Anyone can read along below. ", "Chacun peut lire ci-dessous. ", "يمكن لأي شخص القراءة أدناه. ")}
+            <Link href={`/auth/sign-in?next=/plans/${plan.slug}`} className="underline">
+              {T("Sign in", "Connectez-vous", "سجّل الدخول")}
+            </Link>
+            {T(" to track your progress privately.", " pour suivre votre progression en privé.", " لتتابع تقدّمك بشكل خاص.")}
           </p>
         )}
       </div>
@@ -111,7 +134,7 @@ export default async function PlanPage({ params }: PageProps<"/plans/[slug]">) {
           return (
             <li key={d.day} className={`flex flex-wrap items-center justify-between gap-3 py-3 ${isToday ? "rounded-lg bg-gold-soft/20 px-2" : ""}`}>
               <div>
-                <span className="me-3 text-sm text-muted">Day {d.day}</span>
+                <span className="me-3 text-sm text-muted">{T(`Day ${d.day}`, `Jour ${d.day}`, `اليوم ${d.day}`)}</span>
                 {d.items.map((it) => (
                   <span key={it.href} className="me-3">
                     <Link href={it.href} className="font-serif text-lg hover:underline">{it.label}</Link>

@@ -8,27 +8,29 @@ export interface ChapterPointer {
 }
 
 /** Previous/next chapter across book boundaries in this edition's canonical order. */
-export function adjacentChapters(edition: EditionMeta, book: string, chapter: number) {
-  const idx = edition.books.findIndex((b) => b.id === book);
+export function adjacentChapters(edition: EditionMeta, book: string, chapter: number, showDeuterocanon = true) {
+  // When hidden, deuterocanonical books are skipped (unless you are reading one).
+  const books = edition.books.filter((b) => showDeuterocanon || b.collection !== "deuterocanon" || b.id === book);
+  const idx = books.findIndex((b) => b.id === book);
   if (idx < 0) return { prev: null, next: null };
-  const b = edition.books[idx];
+  const b = books[idx];
   let prev: ChapterPointer | null = null;
   let next: ChapterPointer | null = null;
   if (chapter > 1) prev = { book: b.id, bookName: b.name, chapter: chapter - 1 };
   else if (idx > 0) {
-    const pb = edition.books[idx - 1];
+    const pb = books[idx - 1];
     prev = { book: pb.id, bookName: pb.name, chapter: pb.chapters.length };
   }
   if (chapter < b.chapters.length) next = { book: b.id, bookName: b.name, chapter: chapter + 1 };
-  else if (idx < edition.books.length - 1) {
-    const nb = edition.books[idx + 1];
+  else if (idx < books.length - 1) {
+    const nb = books[idx + 1];
     next = { book: nb.id, bookName: nb.name, chapter: 1 };
   }
   return { prev, next };
 }
 
-export function groupBooks(edition: EditionMeta, locale: "en" | "fr" | "ar" = "en") {
-  const order: Collection[] = ["ot", "deuterocanon", "nt"];
+export function groupBooks(edition: EditionMeta, locale: "en" | "fr" | "ar" = "en", showDeuterocanon = true, keepBook?: string) {
+  const order: Collection[] = showDeuterocanon || edition.books.some((b) => b.id === keepBook && b.collection === "deuterocanon") ? ["ot", "deuterocanon", "nt"] : ["ot", "nt"];
   return order
     .map((c) => ({
       collection: c,

@@ -1,3 +1,4 @@
+import { tri } from "@/lib/i18n/tri";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -18,6 +19,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
   const sp = await searchParams;
   const { t, locale } = await getDictionary();
   const prefs = await getPrefs();
+  const T = tri(prefs.locale);
   const q = (str(sp.q) ?? "").trim().slice(0, 200);
   const editionId = str(sp.edition) ?? prefs.edition;
   const edition = (await getEdition(editionId)) ?? (await getEdition(site.defaultEdition))!;
@@ -36,41 +38,55 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
     if (parsed.ok && !hasDigit) {
       refNotice = (
         <p className="card p-4">
-          Open the book of{" "}
+          {T("Open the book of", "Ouvrir le livre :", "افتح سفر")}{" "}
           <Link className="font-semibold underline" href={`/bible/${edition.id}/${parsed.book.id}`}>
             {parsed.book.name}
           </Link>
-          , or see verses containing “{q}” below.
+          {T(`, or see verses containing “${q}” below.`, ` — ou voyez les versets contenant « ${q} » ci-dessous.`, `، أو اطّلع أدناه على الآيات التي تحتوي «${q}».`)}
         </p>
       );
     } else if (!parsed.ok && parsed.reason === "verse-out-of-range") {
       refNotice = (
         <p role="alert" className="card p-4">
-          {parsed.book.name} {parsed.chapter} has {parsed.maxVerse} verses in {edition.abbreviation}, so verse {parsed.verse} does not exist.{" "}
+          {T(
+            `${parsed.book.name} ${parsed.chapter} has ${parsed.maxVerse} verses in ${edition.abbreviation}, so verse ${parsed.verse} does not exist.`,
+            `${parsed.book.name} ${parsed.chapter} compte ${parsed.maxVerse} versets dans ${edition.abbreviation} : le verset ${parsed.verse} n’existe pas.`,
+            `${parsed.book.name} ${parsed.chapter} فيه ${parsed.maxVerse} آية في ${edition.abbreviation}، لذا لا توجد الآية ${parsed.verse}.`,
+          )}{" "}
           <Link className="underline" href={`/bible/${edition.id}/${parsed.book.id}/${parsed.chapter}`}>
-            Open {parsed.book.name} {parsed.chapter}
+            {T("Open", "Ouvrir", "افتح")} {parsed.book.name} {parsed.chapter}
           </Link>
         </p>
       );
     } else if (!parsed.ok && parsed.reason === "chapter-out-of-range") {
       refNotice = (
         <p role="alert" className="card p-4">
-          {parsed.book.name} has {parsed.book.chapters.length} chapters in {edition.abbreviation}; there is no chapter {parsed.chapter}.{" "}
+          {T(
+            `${parsed.book.name} has ${parsed.book.chapters.length} chapters in ${edition.abbreviation}; there is no chapter ${parsed.chapter}.`,
+            `${parsed.book.name} compte ${parsed.book.chapters.length} chapitres dans ${edition.abbreviation} ; il n’y a pas de chapitre ${parsed.chapter}.`,
+            `${parsed.book.name} فيه ${parsed.book.chapters.length} أصحاحًا في ${edition.abbreviation}؛ لا يوجد أصحاح ${parsed.chapter}.`,
+          )}{" "}
           <Link className="underline" href={`/bible/${edition.id}/${parsed.book.id}`}>
-            Choose a chapter
+            {T("Choose a chapter", "Choisir un chapitre", "اختر أصحاحًا")}
           </Link>
         </p>
       );
     } else if (!parsed.ok && parsed.reason === "invalid-range") {
-      refNotice = <p role="alert" className="card p-4">That verse range runs backwards or past the end of the chapter. Try a range like John 3:16–18.</p>;
+      refNotice = <p role="alert" className="card p-4">
+          {T(
+            "That verse range runs backwards or past the end of the chapter. Try a range like John 3:16–18.",
+            "Cette plage de versets est inversée ou dépasse la fin du chapitre. Essayez par exemple Jean 3:16-18.",
+            "نطاق الآيات معكوس أو يتجاوز نهاية الأصحاح. جرّب مثلًا يوحنا 3:16-18.",
+          )}
+        </p>;
     } else if (!parsed.ok && parsed.reason === "book-not-in-edition") {
       const other = (await listEditions()).find((e) => e.books.some((b) => b.id === parsed.book));
       refNotice = (
         <p role="alert" className="card p-4">
-          That book is not part of {edition.name}.{" "}
+          {T(`That book is not part of ${edition.name}.`, `Ce livre ne fait pas partie de ${edition.name}.`, `هذا السفر ليس جزءًا من ${edition.name}.`)}{" "}
           {other && (
             <Link className="underline" href={`/search?q=${encodeURIComponent(q)}&edition=${other.id}`}>
-              Look it up in {other.name}
+              {T("Look it up in", "Le chercher dans", "ابحث عنه في")} {other.name}
             </Link>
           )}
         </p>
@@ -78,11 +94,15 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
     } else if (!parsed.ok && parsed.reason === "unknown-book") {
       refNotice = (
         <p role="alert" className="card p-4">
-          We couldn’t find a book called “{parsed.bookText}”. Check the spelling, or browse{" "}
+          {T(
+            `We couldn’t find a book called “${parsed.bookText}”. Check the spelling, or browse`,
+            `Aucun livre nommé « ${parsed.bookText} ». Vérifiez l’orthographe, ou parcourez`,
+            `لم نجد سفرًا باسم «${parsed.bookText}». تحقّق من الإملاء، أو تصفّح`,
+          )}{" "}
           <Link className="underline" href={`/bible/${edition.id}`}>
-            all books
+            {T("all books", "tous les livres", "كل الأسفار")}
           </Link>
-          . Showing word matches instead.
+          {T(". Showing word matches instead.", ". Résultats par mots ci-dessous.", ". نعرض مطابقات الكلمات بدلًا من ذلك.")}
         </p>
       );
     }
@@ -146,7 +166,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
             </div>
             <div>
               <label htmlFor="sort" className="label">
-                Sort
+                {T("Sort", "Trier", "ترتيب")}
               </label>
               <select id="sort" name="sort" defaultValue={sort} className="input">
                 <option value="relevance">{t.search.relevance}</option>
@@ -198,7 +218,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
           )}
 
           {totalPages > 1 && (
-            <nav aria-label="Pagination" className="mt-8 flex justify-between">
+            <nav aria-label={T("Pagination", "Pagination", "التنقل بين الصفحات")} className="mt-8 flex justify-between">
               {page > 1 ? <Link className="btn" href={qs({ page: page - 1 })}>← {t.search.prev}</Link> : <span />}
               {page < totalPages ? <Link className="btn" href={qs({ page: page + 1 })}>{t.search.next} →</Link> : <span />}
             </nav>
@@ -208,9 +228,14 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
 
       {!q && (
         <div className="mt-8 text-muted">
-          <p>Examples:</p>
+          <p>{T("Examples:", "Exemples :", "أمثلة:")}</p>
           <ul className="mt-2 flex flex-wrap gap-2">
-            {["John 3:16", "Psalm 23", "1 Corinthians 13", "Romans 8:28-39", "peace", '"fear not"'].map((ex) => (
+            {(edition.language.startsWith("fr")
+              ? ["Jean 3:16", "Psaumes 23", "1 Corinthiens 13", "Romains 8:28-39", "paix", '"ne crains point"']
+              : edition.language.startsWith("ar")
+                ? ["يوحنا 3:16", "المزامير 23", "رومية 8:28-39", "سلام", "محبة"]
+                : ["John 3:16", "Psalm 23", "1 Corinthians 13", "Romans 8:28-39", "peace", '"fear not"']
+            ).map((ex) => (
               <li key={ex}>
                 <Link className="btn btn-sm" href={`/search?q=${encodeURIComponent(ex)}&edition=${edition.id}`}>
                   {ex}

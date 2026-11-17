@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: P): Promise<Metadata> {
     title: `${p.label} (${p.edition.abbreviation})`,
     description: desc,
     openGraph: { title: `${p.label} — ${p.edition.name}`, description: desc, type: "article", siteName: site.name },
-    twitter: { card: "summary", title: p.label, description: desc },
+    twitter: { card: "summary_large_image", title: p.label, description: desc },
   };
 }
 

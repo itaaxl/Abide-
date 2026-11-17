@@ -3,13 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { deleteEntry, saveEntry, type EntryInput } from "@/app/actions/journal";
+import { useMsg, useT } from "../LocaleProvider";
 
-const PROMPTS = [
-  "Something I’m grateful for today…",
-  "My intention for today is…",
-  "Something I noticed in today’s reading…",
-  "I’m bringing this to God…",
-  "A prayer for someone else…",
+const PROMPTS: [string, string, string][] = [
+  ["Something I’m grateful for today…", "Aujourd’hui, je suis reconnaissant pour…", "شيء أشكر الله عليه اليوم…"],
+  ["My intention for today is…", "Mon intention pour aujourd’hui…", "نيّتي لهذا اليوم…"],
+  ["Something I noticed in today’s reading…", "Ce que j’ai remarqué dans ma lecture…", "شيء لاحظته في قراءة اليوم…"],
+  ["I’m bringing this to God…", "Je confie ceci à Dieu…", "أضع هذا أمام الله…"],
+  ["A prayer for someone else…", "Une prière pour quelqu’un…", "صلاة من أجل شخص آخر…"],
 ];
 
 /**
@@ -19,6 +20,8 @@ const PROMPTS = [
  */
 export function EntryEditor({ userId, initial, today }: { userId: string; initial?: EntryInput & { id: string }; today: string }) {
   const router = useRouter();
+  const T = useT();
+  const tr = useMsg();
   const draftKey = `abide:journal-draft:${userId}:${initial?.id ?? "new"}`;
   const [title, setTitle] = useState(initial?.title ?? "");
   const [body, setBody] = useState(initial?.body ?? "");
@@ -67,7 +70,7 @@ export function EntryEditor({ userId, initial, today }: { userId: string; initia
     start(async () => {
       const r = await saveEntry({ id: initial?.id, title, body, refs: split(refs), tags: split(tags), status, entryDate: date });
       if (!r.ok) {
-        setMsg({ ok: false, text: r.error });
+        setMsg({ ok: false, text: tr(r.error) });
         return;
       }
       try {
@@ -75,7 +78,7 @@ export function EntryEditor({ userId, initial, today }: { userId: string; initia
       } catch {
         /* ignore */
       }
-      setMsg({ ok: true, text: "Saved privately." });
+      setMsg({ ok: true, text: T("Saved privately.", "Enregistré en privé.", "حُفظ بشكل خاص.") });
       if (!initial) router.push(`/journal/${r.data!.id}`);
       else router.refresh();
     });
@@ -85,21 +88,24 @@ export function EntryEditor({ userId, initial, today }: { userId: string; initia
     <form onSubmit={submit} className="space-y-4">
       {restored && (
         <p role="status" className="rounded-lg bg-gold-soft/30 p-3 text-sm">
-          We restored an unsaved draft from this browser tab.
+          {T("We restored an unsaved draft from this browser tab.", "Nous avons restauré un brouillon non enregistré de cet onglet.", "استعدنا مسودة غير محفوظة من علامة التبويب هذه.")}
         </p>
       )}
       <div>
-        <label htmlFor="jt" className="label">Title</label>
+        <label htmlFor="jt" className="label">{T("Title", "Titre", "العنوان")}</label>
         <input id="jt" className="input" maxLength={140} value={title} onChange={(e) => setTitle(e.target.value)} required />
       </div>
       <div>
-        <label htmlFor="jb" className="label">Your words</label>
-        <div className="mb-2 flex flex-wrap gap-1" aria-label="Optional reflection prompts">
-          {PROMPTS.map((p) => (
-            <button type="button" key={p} className="btn btn-sm btn-ghost" onClick={() => setBody((b) => (b ? `${b}\n\n${p} ` : `${p} `))}>
-              {p}
-            </button>
-          ))}
+        <label htmlFor="jb" className="label">{T("Your words", "Vos mots", "كلماتك")}</label>
+        <div className="mb-2 flex flex-wrap gap-1" aria-label={T("Optional reflection prompts", "Idées de réflexion", "اقتراحات للتأمل")}>
+          {PROMPTS.map((tri) => {
+            const p = T(...tri);
+            return (
+              <button type="button" key={tri[0]} className="btn btn-sm btn-ghost" onClick={() => setBody((b) => (b ? `${b}\n\n${p} ` : `${p} `))}>
+                {p}
+              </button>
+            );
+          })}
         </div>
         <textarea
           id="jb"
@@ -109,47 +115,47 @@ export function EntryEditor({ userId, initial, today }: { userId: string; initia
           onChange={(e) => setBody(e.target.value)}
           autoCapitalize="sentences"
         />
-        <p className="mt-1 text-xs text-muted">{body.length.toLocaleString()} / 20,000 · Journal entries are never sent to AI.</p>
+        <p className="mt-1 text-xs text-muted">{body.length.toLocaleString()} / 20,000 · {T("Journal entries are never sent to AI.", "Le journal n’est jamais envoyé à l’IA.", "لا يُرسل الدفتر إلى الذكاء الاصطناعي أبدًا.")}</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="jr" className="label">Passages (optional, comma-separated)</label>
+          <label htmlFor="jr" className="label">{T("Passages (optional, comma-separated)", "Passages (facultatif, séparés par des virgules)", "مقاطع (اختياري، تفصلها فواصل)")}</label>
           <input id="jr" className="input" value={refs} onChange={(e) => setRefs(e.target.value)} placeholder="Psalm 23, John 14:27" />
         </div>
         <div>
-          <label htmlFor="jg" className="label">Tags (optional)</label>
-          <input id="jg" className="input" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="family, work" />
+          <label htmlFor="jg" className="label">{T("Tags (optional)", "Étiquettes (facultatif)", "وسوم (اختياري)")}</label>
+          <input id="jg" className="input" value={tags} onChange={(e) => setTags(e.target.value)} placeholder={T("family, work", "famille, travail", "العائلة، العمل")} />
         </div>
         <div>
-          <label htmlFor="js" className="label">Status (your choice)</label>
+          <label htmlFor="js" className="label">{T("Status (your choice)", "Statut (à votre choix)", "الحالة (حسب اختيارك)")}</label>
           <select id="js" className="input" value={status} onChange={(e) => setStatus(e.target.value as EntryInput["status"])}>
-            <option value="ongoing">Ongoing prayer</option>
-            <option value="answered">Answered</option>
-            <option value="reflection">Reflection</option>
+            <option value="ongoing">{T("Ongoing prayer", "Prière en cours", "صلاة مستمرة")}</option>
+            <option value="answered">{T("Answered", "Exaucée", "مُستجابة")}</option>
+            <option value="reflection">{T("Reflection", "Réflexion", "تأمّل")}</option>
           </select>
         </div>
         <div>
-          <label htmlFor="jd" className="label">Date</label>
+          <label htmlFor="jd" className="label">{T("Date", "Date", "التاريخ")}</label>
           <input id="jd" type="date" className="input" value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <button className="btn btn-primary" disabled={pending} aria-busy={pending}>Save privately</button>
+        <button className="btn btn-primary" disabled={pending} aria-busy={pending}>{T("Save privately", "Enregistrer en privé", "احفظ بشكل خاص")}</button>
         {initial && (
           <button
             type="button"
             className="btn btn-danger"
             disabled={pending} aria-busy={pending}
             onClick={() =>
-              confirm("Delete this entry permanently?") &&
+              confirm(T("Delete this entry permanently?", "Supprimer définitivement cette entrée ?", "حذف هذا المدخل نهائيًا؟")) &&
               start(async () => {
                 const r = await deleteEntry(initial.id);
                 if (r.ok) router.push("/journal");
-                else setMsg({ ok: false, text: r.error });
+                else setMsg({ ok: false, text: tr(r.error) });
               })
             }
           >
-            Delete
+            {T("Delete", "Supprimer", "حذف")}
           </button>
         )}
         {msg && <p role="status" className={`text-sm ${msg.ok ? "text-success" : "text-danger"}`}>{msg.text}</p>}

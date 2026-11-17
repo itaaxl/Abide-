@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
   },
   // Bible data is read from disk at runtime; include it in serverless bundles.
   outputFileTracingIncludes: {
-    "/*": ["./data/bibles/**/*"],
+    "/*": ["./data/bibles/**/*", "./src/assets/og/**/*", "./public/brand/**/*"],
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];

@@ -42,8 +42,8 @@ export async function saveSettingsAction(_: FormState, formData: FormData): Prom
 }
 
 /**
- * Permanently delete the account. Requires re-entering the password
- * (reauthentication) and typing DELETE. Deleting the auth user cascades to
+ * Permanently delete the account. Requires typing DELETE plus either the
+ * password or a sign-in within the last 15 minutes (reauthentication). Deleting the auth user cascades to
  * every application table (foreign keys use ON DELETE CASCADE).
  */
 export async function deleteAccountAction(_: FormState, formData: FormData): Promise<FormState> {
@@ -52,8 +52,19 @@ export async function deleteAccountAction(_: FormState, formData: FormData): Pro
     const { user } = await requireVerifiedUser();
     if (!(await consume(`delete:${await clientIp()}`, 5, 3600))) return { error: "Too many attempts. Try again later." };
     const supabase = (await createClient())!;
-    const { error: authErr } = await supabase.auth.signInWithPassword({ email: user.email, password: String(formData.get("password") ?? "") });
-    if (authErr) return { error: "Password is incorrect." };
+    const password = String(formData.get("password") ?? "");
+    if (password) {
+      const { error: authErr } = await supabase.auth.signInWithPassword({ email: user.email, password });
+      if (authErr) return { error: "Password is incorrect." };
+    } else {
+      // Accounts created with email codes may have no password: accept a
+      // sign-in (by any method) completed in the last 15 minutes instead.
+      const { data } = await supabase.auth.getClaims();
+      const amr = (data?.claims?.amr ?? []) as { method: string; timestamp: number }[];
+      const latest = Math.max(0, ...amr.map((a) => Number(a.timestamp) || 0));
+      if (Date.now() / 1000 - latest > 15 * 60)
+        return { error: "For your security, sign in again (an email code is fine), then delete your account within 15 minutes — or enter your password." };
+    }
     const admin = createAdminClient();
     if (!admin)
       return {

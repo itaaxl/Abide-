@@ -4,8 +4,8 @@ import type { EditionMeta } from "@/lib/bible/types";
 import type { Locale } from "@/lib/prefs";
 
 /** All books of the selected edition, grouped by its own collections. */
-export function BookBrowser({ edition, locale, compact = false }: { edition: EditionMeta; locale: Locale; compact?: boolean }) {
-  const groups = groupBooks(edition, locale);
+export function BookBrowser({ edition, locale, compact = false, showDeuterocanon = true }: { edition: EditionMeta; locale: Locale; compact?: boolean; showDeuterocanon?: boolean }) {
+  const groups = groupBooks(edition, locale, showDeuterocanon);
   return (
     <div className={`grid gap-8 ${groups.length > 2 ? "lg:grid-cols-3" : "md:grid-cols-2"}`} dir={edition.direction}>
       {groups.map((g) => (

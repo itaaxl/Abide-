@@ -25,6 +25,7 @@ export interface MediaEntry {
   ageGuidance?: { label: string; source: string };
   dramatized: boolean;
   lastChecked: string;
+  i18n?: Partial<Record<"fr" | "ar", { description: string }>>;
 }
 
 export const MEDIA: MediaEntry[] = [
@@ -34,6 +35,10 @@ export const MEDIA: MediaEntry[] = [
     kind: "series",
     description:
       "A multi-season drama about the life of Jesus as seen through the people who met him. It is a dramatization: scenes and dialogue go beyond the biblical text, so read the Gospels alongside it.",
+    i18n: {
+      fr: { description: "Une série en plusieurs saisons sur la vie de Jésus vue par ceux qui l’ont rencontré. C’est une dramatisation : des scènes et dialogues vont au-delà du texte biblique, lisez donc les Évangiles en parallèle." },
+      ar: { description: "مسلسل من عدة مواسم عن حياة يسوع كما رآها الذين التقوه. هو عمل درامي: بعض المشاهد والحوارات تتجاوز النص الكتابي، فاقرأ الأناجيل إلى جانبه." },
+    },
     provider: "The Chosen (official site)",
     url: "https://watch.thechosen.tv/",
     access: "external",
@@ -46,6 +51,10 @@ export const MEDIA: MediaEntry[] = [
     kind: "educational",
     description:
       "Short animated overviews of every book of the Bible and of major biblical themes, produced by a non-profit. Useful as an introduction before reading a book.",
+    i18n: {
+      fr: { description: "De courtes vidéos animées présentant chaque livre de la Bible et ses grands thèmes, produites par une association. Utiles comme introduction avant de lire un livre." },
+      ar: { description: "فيديوهات رسوم متحركة قصيرة تعرّف بكل أسفار الكتاب المقدس وموضوعاته الكبرى، من إنتاج منظمة غير ربحية. مفيدة كمقدّمة قبل قراءة سفر." },
+    },
     provider: "BibleProject (official site)",
     url: "https://bibleproject.com/",
     access: "external",

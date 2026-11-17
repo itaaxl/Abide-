@@ -18,4 +18,14 @@ export interface ChapterAnnotations {
 export const NOTE_MAX = 5000;
 export const SUGGESTED_TAGS = ["Prayer", "Hope", "Family", "Favorites", "Peace", "Strength"];
 
+/** Display names for the stored (English) tag values. */
+export const TAG_LABELS: Record<string, [string, string, string]> = {
+  Prayer: ["Prayer", "Prière", "صلاة"],
+  Hope: ["Hope", "Espérance", "رجاء"],
+  Family: ["Family", "Famille", "عائلة"],
+  Favorites: ["Favorites", "Favoris", "المفضّلة"],
+  Peace: ["Peace", "Paix", "سلام"],
+  Strength: ["Strength", "Force", "قوة"],
+};
+
 export type ActionResult<T = undefined> = { ok: true; data?: T } | { ok: false; error: string };

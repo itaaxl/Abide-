@@ -27,13 +27,33 @@ export function detectCrisis(text: string): boolean {
   return PATTERNS.some((p) => p.test(text));
 }
 
-export const CRISIS_RESPONSE = {
-  title: "You deserve support right now",
-  body: [
+const CRISIS = {
+  en: [
+    "You deserve support right now",
     "Thank you for telling us. What you’re carrying sounds very heavy, and you don’t have to face it alone.",
     "If you might act on thoughts of harming yourself or someone else, or you are in danger, please contact your local emergency number now, or go to the nearest emergency department.",
     "If you can, reach out to someone you trust — a friend, family member, pastor, or doctor — and let them know how you’re feeling today.",
     "A crisis line can also help. You can find one for your country at findahelpline.com, an international directory of helplines.",
   ],
-  link: { href: "https://findahelpline.com/", label: "Find a helpline (findahelpline.com)" },
-};
+  fr: [
+    "Vous méritez du soutien dès maintenant",
+    "Merci de nous l’avoir dit. Ce que vous portez semble très lourd, et vous n’avez pas à l’affronter seul.",
+    "Si vous risquez de passer à l’acte contre vous-même ou quelqu’un d’autre, ou si vous êtes en danger, appelez dès maintenant le numéro d’urgence local ou rendez-vous aux urgences les plus proches.",
+    "Si vous le pouvez, contactez une personne de confiance — un ami, un proche, un pasteur ou un médecin — et dites-lui comment vous vous sentez aujourd’hui.",
+    "Une ligne d’écoute peut aussi aider. Vous en trouverez une pour votre pays sur findahelpline.com, un annuaire international.",
+  ],
+  ar: [
+    "أنت تستحق الدعم الآن",
+    "شكرًا لأنك أخبرتنا. ما تحمله يبدو ثقيلًا جدًا، ولست مضطرًا لمواجهته وحدك.",
+    "إن كنت قد تؤذي نفسك أو غيرك، أو كنت في خطر، فاتصل الآن برقم الطوارئ المحلي أو توجّه إلى أقرب قسم طوارئ.",
+    "إن استطعت، تواصل مع شخص تثق به — صديق أو أحد أفراد العائلة أو راعٍ أو طبيب — وأخبره بما تشعر به اليوم.",
+    "يمكن لخط المساعدة أن يساعد أيضًا. تجد خطًا لبلدك على findahelpline.com، وهو دليل دولي لخطوط المساعدة.",
+  ],
+} as const;
+
+/** Crisis response in the interface language (title first, then paragraphs). */
+export function crisisResponse(locale: "en" | "fr" | "ar" = "en"): string {
+  return CRISIS[locale].join("\n\n");
+}
+
+export const CRISIS_RESPONSE = { title: CRISIS.en[0], body: CRISIS.en.slice(1) };

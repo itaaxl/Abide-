@@ -26,6 +26,14 @@ function readingAnchor(): { el: Element; top: number } | null {
  */
 export function FocusMode({ label, exitLabel }: { label: string; exitLabel: string }) {
   const [on, setOn] = useState(false);
+  // Show a compact floating "Focus mode" button once the top button scrolls away.
+  const [farDown, setFarDown] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setFarDown(window.scrollY > 600);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   const anchor = useRef<{ el: Element; top: number } | null>(null);
   const enterButton = useRef<HTMLButtonElement>(null);
   const exitButton = useRef<HTMLButtonElement>(null);
@@ -75,7 +83,9 @@ export function FocusMode({ label, exitLabel }: { label: string; exitLabel: stri
   useEffect(() => {
     function onPop() {
       if (!window.history.state?.[FOCUS_KEY]) {
-        anchor.current = lastAnchor.current ?? anchor.current ?? readingAnchor();
+        // Browser scroll restoration is off while in focus mode, so the live
+        // position is still the reader's; fall back to the last tracked one.
+        anchor.current = readingAnchor() ?? lastAnchor.current;
         setOn(false);
       }
     }
@@ -112,6 +122,19 @@ export function FocusMode({ label, exitLabel }: { label: string; exitLabel: stri
 
   return (
     <>
+      {!on && farDown && (
+        <button
+          type="button"
+          onClick={enter}
+          aria-label={label}
+          title={label}
+          className="focus-fab reader-secondary pressable fixed end-4 bottom-[calc(var(--nav-total)+0.75rem)] z-30 flex h-11 w-11 items-center justify-center rounded-full border border-rule bg-surface/95 text-ink shadow-md backdrop-blur lg:bottom-[calc(var(--nav-h)+2rem)]"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+          </svg>
+        </button>
+      )}
       <button ref={enterButton} type="button" className="btn btn-sm reader-secondary" onClick={enter}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />

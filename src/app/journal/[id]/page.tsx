@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { gate, PrivateBadge } from "@/components/Gate";
 import { EntryEditor } from "@/components/journal/EntryEditor";
+import { getT } from "@/lib/request";
 import { todayFor } from "@/lib/daily";
 import { createClient } from "@/lib/supabase/server";
 
@@ -12,6 +13,7 @@ export default async function EntryPage({ params }: PageProps<"/journal/[id]">) 
   const { id } = await params;
   const g = await gate(`/journal/${id}`, "Prayer Journal");
   if (!g.user) return g.panel;
+  const { T } = await getT();
   if (!/^[0-9a-f-]{36}$/.test(id)) notFound();
   const supabase = (await createClient())!;
   const { data: e } = await supabase.from("prayer_entries").select("*").eq("id", id).maybeSingle();
@@ -19,9 +21,11 @@ export default async function EntryPage({ params }: PageProps<"/journal/[id]">) 
   const { date } = await todayFor();
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <Link href="/journal" className="text-sm text-muted underline">← Journal</Link>
+      <Link href="/journal" className="text-sm text-muted underline">
+        <span aria-hidden="true" className="inline-block rtl:rotate-180">←</span> {T("Journal", "Journal", "الدفتر")}
+      </Link>
       <div className="mt-3 flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Edit entry</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{T("Edit entry", "Modifier l’entrée", "تعديل المدخل")}</h1>
         <PrivateBadge />
       </div>
       <div className="mt-6">

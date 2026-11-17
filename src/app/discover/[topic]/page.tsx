@@ -7,7 +7,8 @@ import { getSessionUser } from "@/lib/auth";
 import { resolvePassage } from "@/lib/bible/passage";
 import { refKey } from "@/lib/bible/reference";
 import { getTopics } from "@/lib/content";
-import { getPrefs } from "@/lib/request";
+import { topicText } from "@/content/topics";
+import { getPrefs, getT } from "@/lib/request";
 
 export async function generateMetadata({ params }: PageProps<"/discover/[topic]">): Promise<Metadata> {
   const { topic } = await params;
@@ -19,20 +20,30 @@ export default async function TopicPage({ params }: PageProps<"/discover/[topic]
   const { topic } = await params;
   const t = (await getTopics()).find((x) => x.slug === topic);
   if (!t) notFound();
-  const [prefs, user] = await Promise.all([getPrefs(), getSessionUser()]);
-  const passages = (await Promise.all(t.passages.map(async (p) => ({ note: p.note, passage: await resolvePassage(p.ref, prefs.edition) })))).filter((x) => x.passage);
+  const [prefs, user, { T, locale }] = await Promise.all([getPrefs(), getSessionUser(), getT()]);
+  const tt = topicText(t, locale);
+  const passages = (
+    await Promise.all(t.passages.map(async (p, i) => ({ note: tt.note(i), noteEn: tt.noteIsEnglish(i), passage: await resolvePassage(p.ref, prefs.edition) })))
+  ).filter((x) => x.passage);
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <Link href="/discover" className="text-sm text-muted underline">← Discover</Link>
-      <h1 className="mt-3 text-2xl font-bold tracking-tight">{t.label}</h1>
-      <p className="mt-2 text-muted">{t.description}</p>
+      <Link href="/discover" className="text-sm text-muted underline">
+        <span aria-hidden="true" className="inline-block rtl:rotate-180">←</span> {T("Discover", "Découvrir", "اكتشف")}
+      </Link>
+      <h1 className="mt-3 text-2xl font-bold tracking-tight">{tt.label}</h1>
+      <p className="mt-2 text-muted">{tt.description}</p>
       <ul className="mt-8 space-y-6">
-        {passages.map(({ note, passage }) => {
+        {passages.map(({ note, noteEn, passage }) => {
           const p = passage!;
           return (
             <li key={p.label} className="card p-6">
               <ScriptureQuote passage={p} size="md" />
-              <p className="mt-3 text-sm text-muted"><span className="uppercase tracking-wider">Editorial note:</span> {note}</p>
+              <p className="mt-3 text-sm text-muted">
+                <span className="uppercase tracking-wider">{T("Editorial note:", "Note éditoriale :", "ملاحظة تحريرية:")}</span>{" "}
+                <span lang={noteEn ? "en" : undefined} dir={noteEn ? "ltr" : undefined}>
+                  {note}
+                </span>
+              </p>
               <div className="mt-3">
                 <PassageActions
                   edition={p.edition.id}

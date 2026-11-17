@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { toggleBookmark } from "@/app/actions/annotations";
 import { addPassageCard } from "@/app/actions/flashcards";
 import { copyText } from "@/lib/clipboard";
+import { useMsg, useT } from "./LocaleProvider";
 
 export interface PassageActionProps {
   edition: string;
@@ -23,10 +24,12 @@ export interface PassageActionProps {
 }
 
 export function PassageActions(p: PassageActionProps) {
+  const T = useT();
+  const tr = useMsg();
   const [msg, setMsg] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const flash = (m: string) => {
-    setMsg(m);
+    setMsg(tr(m));
     setTimeout(() => setMsg(null), 3000);
   };
   const passage = { edition: p.edition, book: p.book, chapter: p.chapter, verseStart: p.verseStart, verseEnd: p.verseEnd };
@@ -35,19 +38,19 @@ export function PassageActions(p: PassageActionProps) {
     <div>
       <div className="flex flex-wrap gap-2">
         <Link href={p.chapterHref} className="btn btn-sm">
-          Read the chapter
+          {T("Read the chapter", "Lire le chapitre", "اقرأ الأصحاح")}
         </Link>
         <button
           className="btn btn-sm"
-          onClick={async () => flash((await copyText(`${p.text}\n— ${p.label} (${p.abbreviation})\n${p.attribution}`)) ? "Copied" : "Copy failed — select the text to copy it.")}
+          onClick={async () => flash((await copyText(`${p.text}\n— ${p.label} (${p.abbreviation})\n${p.attribution}`)) ? T("Copied", "Copié", "نُسخ") : T("Copy failed — select the text to copy it.", "Échec de la copie — sélectionnez le texte.", "فشل النسخ — حدّد النص لنسخه."))}
         >
-          Copy
+          {T("Copy", "Copier", "نسخ")}
         </button>
         <button
           className="btn btn-sm"
-          onClick={async () => flash((await copyText(`${location.origin}/p/${p.edition}/${p.shareKey}`)) ? "Link copied" : "Copy failed")}
+          onClick={async () => flash((await copyText(`${location.origin}/p/${p.edition}/${p.shareKey}`)) ? T("Link copied", "Lien copié", "نُسخ الرابط") : T("Copy failed", "Échec de la copie", "فشل النسخ"))}
         >
-          Share link
+          {T("Share link", "Partager le lien", "شارك الرابط")}
         </button>
         {p.canSave ? (
           <>
@@ -57,11 +60,11 @@ export function PassageActions(p: PassageActionProps) {
               onClick={() =>
                 start(async () => {
                   const r = await toggleBookmark(passage);
-                  flash(r.ok ? (r.data ? "Bookmarked" : "Bookmark removed") : r.error);
+                  flash(r.ok ? (r.data ? T("Bookmarked", "Ajouté aux signets", "أُضيفت إشارة") : T("Bookmark removed", "Signet retiré", "أُزيلت الإشارة")) : r.error);
                 })
               }
             >
-              ☆ Bookmark
+              ☆ {T("Bookmark", "Signet", "إشارة")}
             </button>
             <button
               className="btn btn-sm"
@@ -69,17 +72,17 @@ export function PassageActions(p: PassageActionProps) {
               onClick={() =>
                 start(async () => {
                   const r = await addPassageCard(passage);
-                  flash(r.ok ? "Added to your flashcards" : r.error);
+                  flash(r.ok ? T("Added to your flashcards", "Ajouté à vos cartes", "أُضيف إلى بطاقاتك") : r.error);
                 })
               }
             >
-              Make flashcard
+              {T("Make flashcard", "Créer une carte", "أنشئ بطاقة")}
             </button>
           </>
         ) : (
           !p.compact && (
             <Link href="/auth/sign-in" className="self-center text-sm text-muted underline">
-              Sign in to bookmark or make a flashcard
+              {T("Sign in to bookmark or make a flashcard", "Connectez-vous pour enregistrer ou créer une carte", "سجّل الدخول لحفظ إشارة أو إنشاء بطاقة")}
             </Link>
           )
         )}

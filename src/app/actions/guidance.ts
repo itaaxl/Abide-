@@ -20,7 +20,7 @@ import { localDate } from "@/lib/time";
 
 const TONES = ["gentle", "encouraging", "reflective", "practical"] as const;
 
-export async function requestGuidance(input: { text: string; topic?: string; tone?: string; edition?: string }): Promise<ActionResult<GuidanceResult>> {
+export async function requestGuidance(input: { text: string; topic?: string; tone?: string; edition?: string; locale?: string }): Promise<ActionResult<GuidanceResult>> {
   const cfg = aiConfig();
   const parsed = z
     .object({
@@ -28,6 +28,7 @@ export async function requestGuidance(input: { text: string; topic?: string; ton
       topic: z.string().max(40).optional(),
       tone: z.enum(TONES).optional(),
       edition: z.string().max(40).optional(),
+      locale: z.enum(["en", "fr", "ar"]).optional(),
     })
     .safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
@@ -50,7 +51,7 @@ export async function requestGuidance(input: { text: string; topic?: string; ton
   const aiAvailable = cfg.enabled && Boolean(admin) && edition.license.aiProcessingAllowed;
 
   const result = await runGuidance(
-    { text: v.text, topic: v.topic, tone: v.tone },
+    { text: v.text, topic: v.topic, tone: v.tone, locale: v.locale },
     {
       topics: await getTopics(),
       edition,

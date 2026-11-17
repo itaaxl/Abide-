@@ -46,7 +46,7 @@ export default async function FlashcardsPage({ searchParams }: PageProps<"/flash
   if (tab === "verses") {
     // ?date= keeps old /daily/<date> links working: that day's verse comes first.
     const requested = typeof sp.date === "string" && isIsoDate(sp.date) && sp.date >= ROTATION_EPOCH && sp.date <= today.date ? sp.date : today.date;
-    const cards = await buildVerseCards(requested, prefs.edition, 15);
+    const cards = await buildVerseCards(requested, prefs.edition, 15, prefs.locale);
     const fmt = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", timeZone: "UTC" });
     const items: CarouselCard[] = cards.map((v, i) => ({
       id: `${v.id}-${v.date}`,

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BookBrowser } from "@/components/BookBrowser";
 import { getEdition, listEditions } from "@/lib/bible/provider";
-import { getDictionary } from "@/lib/request";
+import { getDictionary, getPrefs } from "@/lib/request";
 
 export async function generateMetadata({ params }: PageProps<"/bible/[edition]">): Promise<Metadata> {
   const e = await getEdition((await params).edition);
@@ -14,7 +14,7 @@ export default async function EditionPage({ params }: PageProps<"/bible/[edition
   const { edition: id } = await params;
   const edition = await getEdition(id);
   if (!edition) notFound();
-  const { t, locale } = await getDictionary();
+  const [{ t, locale }, prefs] = await Promise.all([getDictionary(), getPrefs()]);
   const editions = await listEditions();
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -29,7 +29,7 @@ export default async function EditionPage({ params }: PageProps<"/bible/[edition
         ))}
       </nav>
       <div className="mt-10">
-        <BookBrowser edition={edition} locale={locale} />
+        <BookBrowser edition={edition} locale={locale} showDeuterocanon={prefs.deuterocanon} />
       </div>
     </div>
   );

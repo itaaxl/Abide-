@@ -98,6 +98,7 @@ await check("verification by code signs the new account in", async () => {
 await check("session persists across reloads and new pages", async () => {
   await page.reload();
   await page.goto(`${BASE}/library`);
+  await page.getByRole("heading", { name: "My Library" }).waitFor({ timeout: 10000 }).catch(() => {});
   assert(await page.getByRole("heading", { name: "My Library" }).isVisible(), "library not available");
 });
 

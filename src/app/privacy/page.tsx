@@ -1,3 +1,4 @@
+import { EnglishOnlyNotice } from "@/components/EnglishOnlyNotice";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { site } from "@/config/site";
@@ -11,7 +12,8 @@ const operatorIncomplete = Object.values(site.operator).some((v) => v.startsWith
 export default function PrivacyPage() {
   const cfg = aiConfig();
   return (
-    <article className="prose-page mx-auto max-w-2xl px-4 py-12">
+    <article className="prose-page mx-auto max-w-2xl px-4 py-12" lang="en" dir="ltr">
+      <EnglishOnlyNotice />
       <h1>Privacy policy</h1>
       {operatorIncomplete && (
         <p className="rounded-lg border border-rule bg-gold-soft/30 p-3 text-sm">

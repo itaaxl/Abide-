@@ -11,6 +11,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Suspense } from "react";
 import { NavProgress } from "@/components/NavProgress";
 import { BottomNav } from "@/components/BottomNav";
+import { LocaleProvider } from "@/components/LocaleProvider";
 import { NetworkStatus } from "@/components/pwa/NetworkStatus";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { getDictionary, getPrefs } from "@/lib/request";
@@ -37,6 +38,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang={locale} dir={dir} data-theme={prefs.theme}>
       <body className="antialiased">
+        <LocaleProvider locale={locale}>
         <SiteHeader />
         <NetworkStatus />
         <main id="main" tabIndex={-1} className="outline-none">
@@ -48,6 +50,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <Suspense fallback={null}>
           <NavProgress />
         </Suspense>
+        </LocaleProvider>
       </body>
     </html>
   );

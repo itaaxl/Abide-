@@ -1,3 +1,4 @@
+import { tri } from "@/lib/i18n/tri";
 import Link from "next/link";
 import { getChapter, getEdition, listEditions } from "@/lib/bible/provider";
 import { adjacentChapters, groupBooks } from "@/lib/bible/navigation";
@@ -10,6 +11,7 @@ import { Reader } from "./Reader";
 import { ReaderToolbar } from "./ReaderToolbar";
 import { ParallelColumn } from "./ParallelColumn";
 import { FocusMode } from "./FocusMode";
+import { ListenButton } from "./ListenButton";
 import { OfflineChapterToggle } from "../pwa/OfflineChapterToggle";
 
 interface Props {
@@ -30,13 +32,14 @@ export async function ReaderView({ edition, book, chapter, target = null, parall
     getSessionUser(),
   ]);
   const bookMeta = edition.books.find((b) => b.id === book);
-  const groups = groupBooks(edition, locale).map((g) => ({
+  const groups = groupBooks(edition, locale, prefs.deuterocanon, book).map((g) => ({
     label: g.label,
     books: g.books.map((b) => ({ id: b.id, name: b.name, chapters: b.chapters.length })),
   }));
   const bookAvailability = Object.fromEntries(editions.map((e) => [e.id, e.books.map((b) => b.id)]));
   const toolbarEditions = editions.map((e) => ({ id: e.id, name: e.name, abbreviation: e.abbreviation, languageName: e.languageName }));
   const H = headingLevel;
+  const T = tri(locale);
 
   if (!data || !bookMeta) {
     return (
@@ -60,7 +63,7 @@ export async function ReaderView({ edition, book, chapter, target = null, parall
     );
   }
 
-  const { prev, next } = adjacentChapters(edition, book, chapter);
+  const { prev, next } = adjacentChapters(edition, book, chapter, prefs.deuterocanon);
   const annotations = await getChapterAnnotations(edition.id, book, chapter);
   const authAvailable = isSupabaseConfigured();
   const parallelEdition = parallel && parallel !== edition.id ? await getEdition(parallel) : null;
@@ -77,11 +80,17 @@ export async function ReaderView({ edition, book, chapter, target = null, parall
         prefs={prefs}
         t={t.reader}
         bookAvailability={bookAvailability}
+        hasDeuterocanon={edition.books.some((b) => b.collection === "deuterocanon")}
       />
 
       <header className="relative mb-8 text-center">
         <div className="mb-3 flex flex-wrap items-center justify-end gap-2">
-          <OfflineChapterToggle path={`/bible/${edition.id}/${book}/${chapter}`} label={`${bookMeta.name} ${chapter} · ${edition.abbreviation}`} />
+          <OfflineChapterToggle
+            path={`/bible/${edition.id}/${book}/${chapter}`}
+            label={`${bookMeta.name} ${chapter} · ${edition.abbreviation}`}
+            book={{ base: `/bible/${edition.id}/${book}`, chapters: bookMeta.chapters.length, name: bookMeta.name, abbr: edition.abbreviation }}
+          />
+          <ListenButton verses={data.verses.map((v) => ({ v: v.v, t: v.t }))} language={edition.language} />
           <FocusMode label={t.reader.focus} exitLabel={t.reader.exitFocus} />
         </div>
         <p className="eyebrow reader-secondary">{edition.name}</p>
@@ -97,6 +106,19 @@ export async function ReaderView({ edition, book, chapter, target = null, parall
           ✦
         </div>
       </header>
+
+      {edition.id === "eng-web" && data.verses.some((v) => v.t.includes("Yahweh")) && (
+        <details className="reader-secondary mx-auto -mt-4 mb-6 max-w-2xl text-sm text-muted">
+          <summary className="cursor-pointer text-center">{T("Why does this translation say “Yahweh”?", "Pourquoi « Yahweh » dans cette traduction ?", "لماذا تقول هذه الترجمة «يهوه»؟")}</summary>
+          <p className="mt-2 leading-relaxed">
+            {T(
+              "In the Hebrew Old Testament, God’s personal name is written with four letters (YHWH). Many English Bibles show it as “the LORD” in small capitals; the World English Bible writes it as “Yahweh”, a common scholarly pronunciation. Both refer to the same God of Israel, the Father of Jesus Christ.",
+              "Dans l’Ancien Testament hébreu, le nom personnel de Dieu s’écrit avec quatre lettres (YHWH). La Louis Segond le rend par « l’Éternel » ; la World English Bible l’écrit « Yahweh », une prononciation courante chez les spécialistes. Il s’agit du même Dieu d’Israël, le Père de Jésus-Christ.",
+              "في العهد القديم العبري يُكتب اسم الله الشخصي بأربعة أحرف (يهوه). تترجمه فاندايك «الرب»، أما الترجمة الإنجليزية العالمية فتكتبه «يهوه» وفق نطق شائع بين الباحثين. وكلاهما يشير إلى إله إسرائيل نفسه، أبي يسوع المسيح.",
+            )}
+          </p>
+        </details>
+      )}
 
       <div className={parallelEdition ? "grid gap-8 lg:grid-cols-2" : ""}>
         <Reader

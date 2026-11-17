@@ -1,3 +1,4 @@
+import { EnglishOnlyNotice } from "@/components/EnglishOnlyNotice";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { site } from "@/config/site";
@@ -6,7 +7,8 @@ export const metadata: Metadata = { title: "About" };
 
 export default function AboutPage() {
   return (
-    <article className="prose-page mx-auto max-w-2xl px-4 py-12">
+    <article className="prose-page mx-auto max-w-2xl px-4 py-12" lang="en" dir="ltr">
+      <EnglishOnlyNotice />
       <h1>About {site.name}</h1>
       <p>
         {site.name} is a quiet place to read the Bible and grow in it: the complete text in English, French, and Arabic; search; a daily verse;

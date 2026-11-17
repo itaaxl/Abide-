@@ -540,3 +540,15 @@ html[data-focus] main > section {
     transform: scaleX(0.6);
   }
 }
+
+/* The floating focus button steps aside while the verse action bar is open. */
+body:has(.reader-actions) .focus-fab {
+  display: none;
+}
+
+/* Read-aloud: the verse being spoken. */
+.verse-speaking {
+  background: color-mix(in srgb, var(--gold-soft) 70%, transparent);
+  border-radius: 4px;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold-soft) 70%, transparent);
+}

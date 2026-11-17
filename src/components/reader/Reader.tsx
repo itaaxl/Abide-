@@ -15,6 +15,7 @@ import {
 } from "@/lib/annotations";
 import { deleteNote, saveNote, saveReadingPosition, setHighlight, toggleBookmark } from "@/app/actions/annotations";
 import { addPassageCard } from "@/app/actions/flashcards";
+import { useMsg, useT } from "../LocaleProvider";
 
 export interface ReaderProps {
   edition: { id: string; abbreviation: string; name: string; direction: "ltr" | "rtl"; language: string; attribution: string };
@@ -79,6 +80,8 @@ export function Reader(props: ReaderProps) {
   const [annotations, setAnnotations] = useState<ChapterAnnotations | null>(props.annotations);
   const [status, setStatus] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState<string | null>(null);
+  const T = useT();
+  const tr = useMsg();
   const [pending, startTransition] = useTransition();
 
   const blocks = useMemo(() => buildBlocks(chapter.verses, prefs.layout), [chapter.verses, prefs.layout]);
@@ -126,7 +129,7 @@ export function Reader(props: ReaderProps) {
     setSelected((s) => (s.includes(v) ? s.filter((x) => x !== v) : [...s, v]));
 
   const flash = (msg: string) => {
-    setStatus(msg);
+    setStatus(tr(msg));
     window.setTimeout(() => setStatus(null), 2500);
   };
 
@@ -365,7 +368,7 @@ export function Reader(props: ReaderProps) {
                   </li>
                 ))}
               </ul>
-              <p className="mt-2 text-xs">Cross-references are part of the World English Bible source files.</p>
+              <p className="mt-2 text-xs">{T("Cross-references are part of the World English Bible source files.", "Les renvois proviennent des fichiers source de la World English Bible.", "الشواهد المرجعية جزء من ملفات المصدر للترجمة الإنجليزية العالمية.")}</p>
             </details>
           )}
         </aside>
@@ -423,7 +426,7 @@ export function Reader(props: ReaderProps) {
             {noteDraft !== null && (
               <div className="mt-3">
                 <label htmlFor="note" className="label">
-                  {t.note} · <span className="text-muted">🔒 Private</span>
+                  {t.note} · <span className="text-muted">🔒 {T("Private", "Privé", "خاص")}</span>
                 </label>
                 <textarea
                   id="note"
@@ -434,14 +437,14 @@ export function Reader(props: ReaderProps) {
                 />
                 <div className="mt-2 flex items-center gap-2">
                   <button className="btn btn-sm btn-primary" onClick={onSaveNote} disabled={pending || !noteDraft.trim()} aria-busy={pending}>
-                    Save
+                    {T("Save", "Enregistrer", "حفظ")}
                   </button>
                   {existingNote && (
                     <button className="btn btn-sm btn-danger" onClick={onDeleteNote} disabled={pending} aria-busy={pending}>
-                      Delete
+                      {T("Delete", "Supprimer", "حذف")}
                     </button>
                   )}
-                  <button className="btn btn-sm btn-ghost" onClick={() => setNoteDraft(null)}>Cancel</button>
+                  <button className="btn btn-sm btn-ghost" onClick={() => setNoteDraft(null)}>{T("Cancel", "Annuler", "إلغاء")}</button>
                   <span className="ms-auto text-xs text-muted">{noteDraft.length}/{NOTE_MAX}</span>
                 </div>
               </div>

@@ -16,8 +16,7 @@ export interface VerseCardData {
   editionName: string;
   direction: "ltr" | "rtl";
   language: string;
-  /** Short editorial line, shown separately and labelled "Reflection". */
-  /** Short editorial phrase (English only; omitted for other languages). Not Scripture. */
+  /** Short editorial phrase in the interface language. Not Scripture. */
   reflection: string | null;
   chapterHref: string;
   shareKey: string;
@@ -33,7 +32,7 @@ export interface VerseCardData {
  * The daily-verse rotation as cards: the card for `startDate` first, then the
  * following days' verses. Verse text always comes from the verified dataset.
  */
-export async function buildVerseCards(startDate: string, edition: string, count = 15): Promise<VerseCardData[]> {
+export async function buildVerseCards(startDate: string, edition: string, count = 15, locale: "en" | "fr" | "ar" = "en"): Promise<VerseCardData[]> {
   const list = await getDailyVerses();
   const n = list.length;
   const startIdx = (((daysBetween(ROTATION_EPOCH, startDate) % n) + n) % n) as number;
@@ -53,7 +52,8 @@ export async function buildVerseCards(startDate: string, edition: string, count 
         editionName: p.edition.name,
         direction: p.edition.direction,
         language: p.edition.language,
-        reflection: p.edition.language.startsWith("en") && entry.phrase ? entry.phrase : null,
+        // Reflection in the interface language (editorial; never Scripture).
+        reflection: (locale === "fr" ? entry.phraseFr : locale === "ar" ? entry.phraseAr : entry.phrase) || null,
         chapterHref: `/bible/${p.edition.id}/${r.book}/${r.chapter}${r.verse ? `?v=${r.verse}${r.endVerse ? `-${r.endVerse}` : ""}#v${r.verse}` : ""}`,
         shareKey: refKey(r),
         book: r.book,

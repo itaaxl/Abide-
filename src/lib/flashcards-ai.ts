@@ -64,14 +64,14 @@ export interface GeneratedCard {
 }
 
 /** Stable cache key. Personal goals are scoped to the user and hashed (the text is never stored). */
-export function cacheKey(input: CardsInput, edition: string, model: string, userId: string): string {
+export function cacheKey(input: CardsInput, edition: string, model: string, userId: string, lang = "en"): string {
   const norm =
     input.mode === "topic"
       ? `topic:${input.topic}`
       : input.mode === "chapter"
         ? `chapter:${input.book}.${input.chapter}`
         : `goal:${userId}:${input.text.toLowerCase().replace(/\s+/g, " ").trim()}`;
-  return createHash("sha256").update(`${CARDS_PROMPT_VERSION}|${model}|${edition}|${norm}`).digest("hex");
+  return createHash("sha256").update(`${CARDS_PROMPT_VERSION}|${model}|${edition}|${lang}|${norm}`).digest("hex");
 }
 
 /** Candidate passages from the verified dataset only. */
@@ -109,9 +109,10 @@ export async function cardCandidates(input: CardsInput, edition: EditionMeta): P
 
 const escape = (s: string) => s.replace(/[<>]/g, (c) => (c === "<" ? "‹" : "›"));
 
-export function buildCardsMessage(request: string, candidates: CardCandidate[]): string {
+export function buildCardsMessage(request: string, candidates: CardCandidate[], lang: "en" | "fr" | "ar" = "en"): string {
   const list = candidates.map((c) => `${c.id}: ${c.label} — "${c.text.slice(0, 400)}"`).join("\n");
-  return `<request>\n${escape(request)}\n</request>\n\nCandidate passages (choose only from these ids):\n${list}`;
+  const language = { en: "English", fr: "French", ar: "Modern Standard Arabic" }[lang];
+  return `<request>\n${escape(request)}\n</request>\n\nCandidate passages (choose only from these ids):\n${list}\n\nWrite each reflection and any clarifying question in ${language}.`;
 }
 
 export function describeRequest(input: CardsInput, edition: EditionMeta): string {
